@@ -1,0 +1,15 @@
+{
+  "reported_at_utc": "2026-10-26T03:26:26.466682+00:00",
+  "deployment_uuid": "3c001d6b-dc45-8fd9-aadf-fb0f0db5dbf4",
+  "image": "oceanbase/seekdb@sha256:4db4961869d554313520d6081fca29265ba6da6db7313311bd8acbed771a956b",
+  "endpoint": "https://openwebapi.oceanbase.com/api/web/oceanbase/report",
+  "method": "POST of the real instance-generated content and component, without changing their values",
+  "payload_sha256": "1d58eb7ad1e2ad30be819e40b52135b0ebf0725886289e1bd501e44752b1bfa0",
+  "http_status": 200,
+  "response": {
+    "code": 200,
+    "message": "\u64cd\u4f5c\u6210\u529f",
+    "data": "31189404704"
+  },
+  "competition_claim_verified": false
+}

@@ -1,5 +1,23 @@
 # 赛题一：部署 seekdb
 
+## 本次部署结果
+
+2026-10-26 11:26（北京时间）已在 GitHub Actions 的 Linux 环境部署官方 seekdb 1.4，执行真实 SQL 查询成功，官方遥测接口返回 HTTP 200、业务码 200 和“上报成功”。
+
+**赛题一提测填写以下完整 UUID：**
+
+```text
+3c001d6b-dc45-8fd9-aadf-fb0f0db5dbf4
+```
+
+- [成功的部署运行记录](https://github.com/Amadeus100/seekdb-2026/actions/runs/40264057609)
+- [原始实例遥测](evidence/telemetry.generated.json)
+- [SQL 验证结果](evidence/sql-validation.json)
+- [官方遥测接收响应](evidence/telemetry-report.json)
+- [部署信息](deployment.json)
+
+以上文件中的 UUID 已交叉核对一致。遥测响应里的数字记录 ID 不是部署 UUID。保存记录后，临时容器已释放；大赛平台的同步和首次认领结果仍需实际提测确认。
+
 官方题目要求部署真实 seekdb、确认可以执行 SQL，并提交实例 `run/telemetry.json` 中的 `content.id`。该值必须是完整的 36 位 UUID。2026-10-26 更新的[赛题说明](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/lz6ixow11mar233g)明确部署平台不限，AMD 算力是可选资源。
 
 ## 部署与验证
@@ -19,7 +37,7 @@ bash competition/task1/deploy.sh
 sha256:4db4961869d554313520d6081fca29265ba6da6db7313311bd8acbed771a956b
 ```
 
-配置为 2 核、2GB 内存、4GB 日志磁盘，SQL 端口只映射至本机 `127.0.0.1:2881`。如果该端口已占用，可通过 `SEEKDB_PORT=2883 bash competition/task1/deploy.sh` 使用其他端口。
+启动参数请求 2 核、2GB 内存、4GB 日志磁盘；实际采用值保留在原始遥测的 `content.resource` 中，本次记录为 2 核、约 6.20GB 内存、4GB 日志磁盘。SQL 端口只映射至本机 `127.0.0.1:2881`。如果该端口已占用，可通过 `SEEKDB_PORT=2883 bash competition/task1/deploy.sh` 使用其他端口。
 
 脚本会完成以下操作：
 

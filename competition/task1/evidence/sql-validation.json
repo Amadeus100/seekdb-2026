@@ -1,0 +1,16 @@
+{
+  "verified_at_utc": "2026-10-26T03:26:25.058004+00:00",
+  "deployment_uuid": "3c001d6b-dc45-8fd9-aadf-fb0f0db5dbf4",
+  "telemetry_file": "/home/runner/work/seekdb-2026/seekdb-2026/competition/task1/evidence/telemetry.generated.json",
+  "telemetry_file_sha256": "e7b0fe9f1077d980f48e77de883a2966d10cf38822df2cd33f2f3ad19a7c0623",
+  "instance_recorded_sent": null,
+  "endpoint": "127.0.0.1:2881",
+  "sql": "SELECT 1 AS probe, VERSION() AS version, CURRENT_USER() AS current_user_name, DATABASE() AS database_name",
+  "result": {
+    "probe": 1,
+    "version": "5.7.25-OceanBase seekdb-v1.4.0.0",
+    "current_user_name": "root@%",
+    "database_name": "test"
+  },
+  "sql_verified": true
+}
