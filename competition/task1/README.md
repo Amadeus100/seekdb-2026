@@ -10,7 +10,7 @@
 3c001d6b-dc45-8fd9-aadf-fb0f0db5dbf4
 ```
 
-- [成功的部署运行记录](https://github.com/Amadeus100/seekdb-2026/actions/runs/40264057609)
+- [成功的部署运行记录](https://github.com/Amadeus100/seekdb-2026-backup/actions/runs/40264057609)
 - [原始实例遥测](evidence/telemetry.generated.json)
 - [SQL 验证结果](evidence/sql-validation.json)
 - [官方遥测接收响应](evidence/telemetry-report.json)

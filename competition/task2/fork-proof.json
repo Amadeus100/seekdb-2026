@@ -1,0 +1,13 @@
+{
+  "registration_repository": "https://github.com/Amadeus100/seekdb-2026",
+  "fork_repository": "https://github.com/Amadeus100/seekdb-2026",
+  "github_repository_id": 1434215580,
+  "owner": "Amadeus100",
+  "private": false,
+  "fork": true,
+  "parent": "oceanbase/seekdb",
+  "source": "oceanbase/seekdb",
+  "original_repository_backup": "https://github.com/Amadeus100/seekdb-2026-backup",
+  "original_repository_id": 1433820806,
+  "task1_deployment_uuid": "3c001d6b-dc45-8fd9-aadf-fb0f0db5dbf4"
+}

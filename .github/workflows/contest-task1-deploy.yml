@@ -2,12 +2,6 @@ name: Contest task 1 - deploy seekdb
 
 on:
   workflow_dispatch:
-  push:
-    branches: [2026-competition]
-    paths:
-      - .github/workflows/contest-task1-deploy.yml
-      - competition/task1/deploy.sh
-      - competition/task1/verify.py
 
 permissions:
   contents: read

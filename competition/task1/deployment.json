@@ -7,7 +7,7 @@
   "seekdb_version": "1.4.0.0",
   "image": "oceanbase/seekdb@sha256:4db4961869d554313520d6081fca29265ba6da6db7313311bd8acbed771a956b",
   "source_commit": "be0f0ace067c328b1cbe1e32618b5e3472e9d5c8",
-  "workflow_run_url": "https://github.com/Amadeus100/seekdb-2026/actions/runs/40264057609",
+  "workflow_run_url": "https://github.com/Amadeus100/seekdb-2026-backup/actions/runs/40264057609",
   "sql_verified": true,
   "telemetry_endpoint_accepted": true,
   "telemetry_response": {
