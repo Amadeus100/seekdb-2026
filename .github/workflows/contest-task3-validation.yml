@@ -1,0 +1,49 @@
+name: Contest task 3 - C++ regression validation
+
+on:
+  push:
+    branches: [ci/ddl-identifier-validation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  oblib-regression:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/ddl-identifier-escaping
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install extraction tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y rpm2cpio cpio libtinfo5 libncurses5 libaio1
+      - uses: actions/cache@v4
+        with:
+          path: |
+            deps/3rd
+            ~/.cache/bazel
+          key: task3-oblib-${{ runner.os }}-${{ hashFiles('deps/init/oceanbase.el9.x86_64.deps', '.bazelversion') }}
+      - name: Record exact source revision
+        run: git rev-parse HEAD | tee source-commit.txt
+      - name: Prepare official build dependencies
+        run: python3 build.py init 2>&1 | tee init.log
+      - name: Build and run production C++ regression tests
+        run: python3 build.py test --jobs=2 --test_output=errors //unittest/oblib:test_sql_string_identifier 2>&1 | tee unit.log
+      - name: Preserve validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: task3-cpp-validation-${{ github.run_id }}
+          path: |
+            source-commit.txt
+            init.log
+            unit.log
+            build/testlogs/unittest/oblib/test_sql_string_identifier/test.xml
+            build/testlogs/unittest/oblib/test_sql_string_identifier/test.log
+          retention-days: 14
