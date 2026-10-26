@@ -1,0 +1,277 @@
+Downloading Bazel: https://releases.bazel.build/9.3.0/release/bazel-9.3.0-linux-x86_64
+Starting local Bazel server (9.3.0) and connecting to it...
+INFO: Invocation ID: 681b6b64-8ae8-4943-b4f9-c9630e8cbb7f
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Loading: 0 packages loaded
+    currently loading: unittest/oblib
+Loading: 0 packages loaded
+    currently loading: unittest/oblib
+Analyzing: target //unittest/oblib:test_sql_string_identifier (5 packages loaded, 6 targets configured)
+Analyzing: target //unittest/oblib:test_sql_string_identifier (5 packages loaded, 6 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (8 packages loaded, 9 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (9 packages loaded, 9 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (19 packages loaded, 9 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (60 packages loaded, 9 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (62 packages loaded, 9 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (62 packages loaded, 9 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (63 packages loaded, 9 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (102 packages loaded, 2788 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (103 packages loaded, 6220 targets configured)
+
+Analyzing: target //unittest/oblib:test_sql_string_identifier (103 packages loaded, 6220 targets configured)
+
+INFO: Analyzed target //unittest/oblib:test_sql_string_identifier (108 packages loaded, 6680 targets configured, 164 aspect applications).
+[12 / 92] [Prepa] Writing script rust/sql_nio_headers.cppmap
+[86 / 161] checking cached actions
+[86 / 161] [Prepa] Building Rust libraries for linux
+[86 / 161] Building Rust libraries for linux; 1s disk-cache, linux-sandbox
+[86 / 161] Building Rust libraries for linux; 4s disk-cache, linux-sandbox
+[86 / 161] Building Rust libraries for linux; 34s disk-cache, linux-sandbox
+INFO: From Building Rust libraries for linux:
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling hashbrown v0.17.1
+   Compiling cc v1.5.1
+   Compiling equivalent v1.0.2
+   Compiling serde_core v1.0.229
+   Compiling indexmap v2.14.2
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling scratch v1.0.9
+   Compiling termcolor v1.4.1
+   Compiling unicode-width v0.2.2
+   Compiling libc v0.2.189
+   Compiling codespan-reporting v0.13.1
+   Compiling autocfg v1.5.1
+   Compiling serde v1.0.229
+   Compiling memchr v2.8.3
+   Compiling num-traits v0.2.19
+   Compiling cxx-build v1.0.202
+   Compiling link-cplusplus v1.0.12
+   Compiling serde_derive v1.0.229
+   Compiling itoa v1.0.18
+   Compiling cxxbridge-flags v1.0.202
+   Compiling cfg-if v1.0.5
+   Compiling utf8parse v0.2.2
+   Compiling anstyle-parse v1.0.0
+   Compiling cxx v1.0.202
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling rustix v1.1.5
+   Compiling anstyle-query v1.1.5
+   Compiling getrandom v0.4.3
+   Compiling anstyle v1.0.14
+   Compiling colorchoice v1.0.5
+   Compiling zmij v1.0.23
+   Compiling anstream v1.0.0
+   Compiling crossbeam-utils v0.8.23
+   Compiling linux-raw-sys v0.12.1
+   Compiling winnow v1.0.4
+   Compiling strsim v0.11.1
+   Compiling clap_lex v1.1.1
+   Compiling bitflags v2.13.2
+   Compiling serde_json v1.0.151
+   Compiling clap_builder v4.6.7
+   Compiling toml_parser v1.1.3+spec-1.1.0
+   Compiling toml_datetime v0.7.5+spec-1.1.0
+   Compiling serde_spanned v1.1.1
+   Compiling cbindgen v0.29.4
+   Compiling once_cell v1.21.4
+   Compiling winnow v0.7.15
+   Compiling fastrand v2.5.0
+   Compiling clap v4.6.7
+   Compiling tempfile v3.27.0
+   Compiling thiserror v2.0.21
+   Compiling minimal-lexical v0.2.1
+   Compiling heck v0.5.0
+   Compiling toml v0.9.12+spec-1.1.0
+   Compiling num-conv v0.2.2
+   Compiling time-core v0.1.9
+   Compiling log v0.4.34
+   Compiling time-macros v0.2.32
+   Compiling thiserror-impl v2.0.21
+   Compiling nom v7.1.3
+   Compiling synstructure v0.13.2
+   Compiling ring v0.17.14
+   Compiling deranged v0.5.8
+   Compiling powerfmt v0.2.0
+   Compiling crossbeam-epoch v0.9.21
+   Compiling rusticata-macros v4.1.0
+   Compiling asn1-rs-derive v0.6.0
+   Compiling time v0.3.55
+   Compiling asn1-rs-impl v0.2.0
+   Compiling cxxbridge-macro v1.0.202
+   Compiling displaydoc v0.2.7
+   Compiling foldhash v0.2.0
+   Compiling crossbeam-deque v0.8.8
+   Compiling semver v1.0.28
+   Compiling rustversion v1.0.23
+   Compiling parking_lot_core v0.9.12
+   Compiling rustc_version v0.4.1
+   Compiling asn1-rs v0.7.2
+   Compiling num-integer v0.1.47
+   Compiling local v0.1.0 (/home/runner/work/seekdb-2026/seekdb-2026/build/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-opt/bin/rust/cargo-work/workspace/rust/local)
+warning: linker stderr: /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/Scrt1.o: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+         /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/libm.so.6: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+         /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/libmvec.so.1: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+         /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/libc.so.6: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `local` (build script) generated 1 warning
+   Compiling getrandom v0.2.17
+   Compiling bytemuck_derive v1.12.1
+   Compiling nom v8.0.0
+   Compiling zeroize v1.9.0
+   Compiling untrusted v0.9.0
+   Compiling oid-registry v0.8.1
+   Compiling ryu v1.0.23
+   Compiling scopeguard v1.2.0
+   Compiling unsafe-libyaml v0.2.11
+   Compiling crc32fast v1.5.2
+   Compiling smallvec v1.16.2
+   Compiling bytemuck v1.25.2
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling lock_api v0.4.14
+   Compiling rustls-pki-types v1.15.1
+   Compiling spdlog-internal v0.2.1
+   Compiling num-bigint v0.4.8
+   Compiling spdlog-rs v0.5.3
+   Compiling crossbeam-queue v0.3.14
+   Compiling crossbeam-channel v0.5.17
+   Compiling simd-adler32 v0.3.10
+   Compiling rustls v0.23.46
+   Compiling iana-time-zone v0.1.65
+   Compiling adler2 v2.0.1
+   Compiling chrono v0.4.45
+   Compiling miniz_oxide v0.9.1
+   Compiling der-parser v10.0.0
+   Compiling crossbeam v0.8.5
+   Compiling arc-swap v1.9.2
+   Compiling spdlog-macros v0.3.1
+   Compiling rustls-webpki v0.103.15
+   Compiling config v0.1.0 (/home/runner/work/seekdb-2026/seekdb-2026/build/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-opt/bin/rust/cargo-work/workspace/rust/config)
+   Compiling parking_lot v0.12.5
+warning: `config` (build script) generated 1 warning (1 duplicate)
+   Compiling atomic v0.6.1
+   Compiling sql-nio v0.1.0 (/home/runner/work/seekdb-2026/seekdb-2026/build/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-opt/bin/rust/cargo-work/workspace/rust/sql-nio)
+   Compiling in-process v0.1.0 (/home/runner/work/seekdb-2026/seekdb-2026/build/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-opt/bin/rust/cargo-work/workspace/rust/in-process)
+   Compiling logger v0.1.0 (/home/runner/work/seekdb-2026/seekdb-2026/build/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-opt/bin/rust/cargo-work/workspace/rust/logger)
+   Compiling lazy_static v1.5.0
+   Compiling dyn-clone v1.0.20
+   Compiling subtle v2.6.1
+   Compiling kv v0.1.0 (/home/runner/work/seekdb-2026/seekdb-2026/build/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-opt/bin/rust/cargo-work/workspace/rust/kv)
+warning: `logger` (build script) generated 1 warning (1 duplicate)
+   Compiling data-encoding v2.11.1
+   Compiling value-bag v1.14.1
+warning: linker stderr: /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/Scrt1.o: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+         /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/libc.so.6: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+         /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/libm.so.6: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+         /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/libmvec.so.1: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+         /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/libm.so.6: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+         /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/libmvec.so.1: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+         /home/runner/work/seekdb-2026/seekdb-2026/deps/3rd/usr/local/oceanbase/devtools/bin/ld: /lib/x86_64-linux-gnu/libc.so.6: unsupported GNU_PROPERTY_TYPE (5) type: 0xc0008002
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `sql-nio` (build script) generated 1 warning
+   Compiling x509-parser v0.18.1
+warning: `in-process` (build script) generated 1 warning (1 duplicate)
+   Compiling flate2 v1.1.10
+   Compiling mio v1.2.3
+   Compiling socket2 v0.6.5
+   Compiling slab v0.4.12
+   Compiling seekdb-rust v0.1.0 (/home/runner/work/seekdb-2026/seekdb-2026/build/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-opt/bin/rust/cargo-work/workspace/rust/seekdb-rust)
+    Finished `release` profile [optimized + debuginfo] target(s) in 1m 01s
+[87 / 161] [Scann] Compiling unittest/oblib/test_sql_string_identifier.cpp
+[89 / 161] Compiling unittest/oblib/test_sql_string_identifier.cpp; 1s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[90 / 161] Compiling src/oblib/lib/compress/zstd_1_3_8/zstd_src/zstd_opt.c; 1s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[90 / 161] Compiling src/oblib/lib/compress/zstd_1_3_8/zstd_src/zstd_opt.c; 2s disk-cache, linux-sandbox ... (2 actions running)
+[92 / 161] Compiling src/oblib/lib/compress/zstd_1_3_8/zstd_src/zstd_opt.c; 3s disk-cache, linux-sandbox ... (2 actions running)
+[93 / 161] Compiling src/oblib/_ob_malloc_impl_ob_malloc_object_list_common_alloc_0.unity.cpp; 5s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[95 / 161] Compiling src/oblib/lib/compress/zstd_1_3_8/zstd_src/zstd_lazy.c; 0s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[96 / 161] Compiling src/oblib/lib/compress/zstd_1_3_8/zstd_src/zstd_lazy.c; 2s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[97 / 161] Compiling src/oblib/_oblib_bitmap_impl_oblib_lib_bitmap_common_0.unity.cpp; 1s disk-cache, linux-sandbox ... (2 actions running)
+[98 / 161] Compiling src/oblib/_oblib_bitmap_impl_oblib_lib_bitmap_common_0.unity.cpp; 2s disk-cache, linux-sandbox ... (2 actions running)
+[99 / 161] Compiling src/oblib/lib/compress/zstd_1_3_8/zstd_src/zstd_double_fast.c; 1s disk-cache, linux-sandbox ... (2 actions running)
+[100 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 1s disk-cache, linux-sandbox ... (2 actions running)
+[102 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 2s disk-cache, linux-sandbox ... (2 actions running)
+[104 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 3s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[108 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 5s disk-cache, linux-sandbox ... (2 actions running)
+[111 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 6s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[115 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 7s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[118 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 9s disk-cache, linux-sandbox ... (2 actions running)
+[119 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 11s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[119 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 13s disk-cache, linux-sandbox ... (2 actions running)
+[120 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 15s disk-cache, linux-sandbox ... (2 actions running)
+[121 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 16s disk-cache, linux-sandbox ... (2 actions running)
+[122 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 17s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[122 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 19s disk-cache, linux-sandbox ... (2 actions running)
+[123 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 20s disk-cache, linux-sandbox ... (2 actions running)
+[124 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 21s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[124 / 161] Compiling src/oblib/_oblib_codec_scalar_impl_oblib_lib_codec_0.unity.cpp; 23s disk-cache, linux-sandbox ... (2 actions running)
+[125 / 161] Compiling src/oblib/_oblib_foundation_impl_oblib_lib_charset_0.unity.cpp; 4s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[126 / 161] Compiling src/oblib/_oblib_codec_simd_impl_oblib_lib_simd_codec_simd_0.unity.cpp; 1s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[126 / 161] Compiling src/oblib/_oblib_codec_simd_impl_oblib_lib_simd_codec_simd_0.unity.cpp; 2s disk-cache, linux-sandbox ... (2 actions running)
+[128 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_common_0.unity.cpp; 1s disk-cache, linux-sandbox ... (2 actions running)
+[129 / 161] Compiling src/oblib/_oblib_foundation_impl_oblib_lib_common_mixed_0.unity.cpp; 3s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[129 / 161] Compiling src/oblib/_oblib_foundation_impl_oblib_lib_common_mixed_0.unity.cpp; 5s disk-cache, linux-sandbox ... (2 actions running)
+[130 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_common_mixed_0.unity.cpp; 2s disk-cache, linux-sandbox ... (2 actions running)
+[131 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_common_mixed_0.unity.cpp; 7s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[131 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_common_mixed_0.unity.cpp; 8s disk-cache, linux-sandbox ... (2 actions running)
+[132 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_common_mixed_0.unity.cpp; 9s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[133 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_common_mixed_0.unity.cpp; 11s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[133 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_common_mixed_0.unity.cpp; 12s disk-cache, linux-sandbox ... (2 actions running)
+[134 / 161] Compiling src/oblib/_oblib_foundation_impl_oblib_lib_lock_0.unity.cpp; 2s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[135 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_log_0.unity.cpp; 1s disk-cache, linux-sandbox ... (2 actions running)
+[136 / 161] Compiling src/oblib/_oblib_foundation_impl_oblib_lib_oblog_0.unity.cpp; 2s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[137 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_datum_0.unity.cpp; 1s disk-cache, linux-sandbox ... (2 actions running)
+[139 / 161] Compiling src/oblib/_oblib_foundation_impl_oblib_lib_thread_0.unity.cpp; 0s disk-cache, linux-sandbox ... (2 actions running)
+[140 / 161] Compiling src/oblib/_oblib_foundation_impl_oblib_lib_thread_0.unity.cpp; 3s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[141 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 1s disk-cache, linux-sandbox ... (2 actions running)
+[142 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 5s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[145 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 7s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[146 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 8s disk-cache, linux-sandbox ... (2 actions running)
+[147 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 9s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[148 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 10s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[149 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 11s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[150 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 13s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[150 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 14s disk-cache, linux-sandbox ... (2 actions running)
+[151 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 15s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[151 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_json_type_0.unity.cpp; 17s disk-cache, linux-sandbox ... (2 actions running)
+[152 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_xml_0.unity.cpp; 3s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[152 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_xml_0.unity.cpp; 4s disk-cache, linux-sandbox ... (2 actions running)
+[153 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_xml_0.unity.cpp; 5s disk-cache, linux-sandbox ... (2 actions running)
+[154 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_xml_0.unity.cpp; 8s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[155 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_number_0.unity.cpp; 1s disk-cache, linux-sandbox ... (2 actions running)
+[156 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_number_0.unity.cpp; 4s disk-cache, linux-sandbox ... (2 actions, 1 running)
+[156 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_number_0.unity.cpp; 5s disk-cache, linux-sandbox ... (2 actions running)
+[157 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_udt_0.unity.cpp; 3s disk-cache, linux-sandbox ... (2 actions running)
+[158 / 161] Compiling src/oblib/_oblib_common_impl_oblib_common_reloc_udt_0.unity.cpp; 9s disk-cache, linux-sandbox
+[159 / 161] [Prepa] Linking unittest/oblib/test_sql_string_identifier
+INFO: Found 1 test target...
+Target //unittest/oblib:test_sql_string_identifier up-to-date:
+  /home/runner/work/seekdb-2026/seekdb-2026/build/bin/unittest/oblib/test_sql_string_identifier
+INFO: Elapsed time: 246.738s, Critical Path: 92.37s
+INFO: 162 processes: 87 internal, 75 linux-sandbox.
+INFO: Build completed successfully, 162 total actions
+//unittest/oblib:test_sql_string_identifier                              PASSED in 0.0s
+
+Executed 1 out of 1 test: 1 test passes.
+There were tests whose specified size is too big. Use the --test_verbose_timeout_warnings command line option to see which ones these are.

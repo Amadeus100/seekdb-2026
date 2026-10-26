@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="6" failures="0" disabled="0" errors="0" timestamp="2026-10-26T11:17:46" time="0" name="AllTests">
+  <testsuite name="TestSqlStringIdentifier" tests="6" failures="0" disabled="0" errors="0" time="0">
+    <testcase name="mysql_quotes" status="run" time="0" classname="TestSqlStringIdentifier" />
+    <testcase name="quote_selection" status="run" time="0" classname="TestSqlStringIdentifier" />
+    <testcase name="explicit_length_and_utf8" status="run" time="0" classname="TestSqlStringIdentifier" />
+    <testcase name="ddl_wrappers_and_shadow_prefix" status="run" time="0" classname="TestSqlStringIdentifier" />
+    <testcase name="growth_and_append" status="run" time="0" classname="TestSqlStringIdentifier" />
+    <testcase name="empty_and_invalid_quote" status="run" time="0" classname="TestSqlStringIdentifier" />
+  </testsuite>
+</testsuites>
