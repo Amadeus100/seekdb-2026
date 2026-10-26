@@ -9,5 +9,11 @@
   "source": "oceanbase/seekdb",
   "original_repository_backup": "https://github.com/Amadeus100/seekdb-2026-backup",
   "original_repository_id": 1433820806,
-  "task1_deployment_uuid": "3c001d6b-dc45-8fd9-aadf-fb0f0db5dbf4"
+  "task1_deployment_uuid": "3c001d6b-dc45-8fd9-aadf-fb0f0db5dbf4",
+  "team_verification": {
+    "line": "OB-P:N7SZV_5hStw5LHY1tmMbOA",
+    "location": "README.md on the default master branch",
+    "readme_commit": "9e664b918410ccb4bdc42c8296db28ab43ca41c7",
+    "standalone_line_verified": true
+  }
 }

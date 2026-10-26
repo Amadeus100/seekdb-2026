@@ -15,3 +15,7 @@ GitHub API 已验证：
 - GitHub 仓库 ID：`1434215580`。
 
 详见 [fork-proof.json](fork-proof.json)。最终大赛认领结果需在比赛平台提交此完整 HTTPS 地址后确认。
+
+本队验证行已作为普通文本单独加入默认 `master` 分支的根目录 README，且已回读确认：
+
+OB-P:N7SZV_5hStw5LHY1tmMbOA

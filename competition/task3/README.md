@@ -14,6 +14,9 @@ https://github.com/oceanbase/seekdb/pull/1763
 - 修复版本：`c102360f410756cb1df47affaef0732083b5a7cf`。
 - PR 状态：`open`、`draft=false`；创建后核验时可合并。
 - PR 只包含 1 个提交、5 个源码及测试文件。
+- 平台生成的本队验证行已加入 PR 正文，回读确认精确匹配且独占一行；评论不用于替代正文验证。
+
+OB-P:N7SZV_5hStw5LHY1tmMbOA
 
 ## 修复
 

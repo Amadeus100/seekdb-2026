@@ -31,5 +31,11 @@
     "full_seekdb_build_run": false,
     "end_to_end_sql_regression_run": false
   },
-  "competition_claim_verified": false
+  "competition_claim_verified": false,
+  "team_verification": {
+    "line": "OB-P:N7SZV_5hStw5LHY1tmMbOA",
+    "location": "PR #1763 body, not a comment",
+    "standalone_line_count": 1,
+    "verified_at_utc": "2026-10-26T14:26:33.127777+00:00"
+  }
 }
