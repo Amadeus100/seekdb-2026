@@ -3948,6 +3948,10 @@ int ObDMLResolver::resolve_file_sql_table_item(const ParseNode &node, TableItem 
     ret = OB_INVALID_ARGUMENT;
   } else {
     options.path.assign(node.children_[0]->str_value_, node.children_[0]->str_len_);
+    // The inferred schema and file signature are valid for this compilation.
+    // Re-infer on a subsequent statement, rather than caching a stale snapshot.
+    get_stmt()->get_query_ctx()->get_query_hint_for_update().get_global_hint()
+        .merge_plan_cache_hint(OB_USE_PLAN_CACHE_NONE);
     options.secure_root.assign(root.ptr(), root.length());
     options.format = node.value_ == 0 ? "csv" : node.value_ == 1 ? "json" : node.value_ == 2 ? "parquet" : "glob";
     ParseNode *list = node.children_[1];
@@ -4024,7 +4028,11 @@ int ObDMLResolver::resolve_file_sql_table_item(const ParseNode &node, TableItem 
           case file_sql::Type::Boolean: meta.set_tinyint(); break;
           case file_sql::Type::Date: meta.set_date(); break;
           case file_sql::Type::Datetime: meta.set_datetime(); break;
-          default: meta.set_varchar(); meta.set_collation_type(CS_TYPE_UTF8MB4_BIN); break;
+          default:
+            meta.set_varchar();
+            meta.set_collation_type(CS_TYPE_UTF8MB4_BIN);
+            meta.set_collation_level(CS_LEVEL_IMPLICIT);
+            break;
         }
         ObString name(column.name.size(), column.name.data());
         ObString copied_name;
@@ -4040,7 +4048,7 @@ int ObDMLResolver::resolve_file_sql_table_item(const ParseNode &node, TableItem 
   }
   if (OB_FAIL(ret)) {
     LOG_WARN("file table schema resolution failed", K(ret), "reader_error", scanner.error().c_str(),
-        "format", node.value_, "path_type", node.children_[0]->type_, K(root));
+        "format", node.value_, "path_type", node.children_[0] == nullptr ? T_INVALID : node.children_[0]->type_, K(root));
   }
   return ret;
 }

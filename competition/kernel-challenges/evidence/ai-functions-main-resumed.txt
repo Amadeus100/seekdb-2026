@@ -1,0 +1,66 @@
+PASS 1: select ai_prompt('{0}/{0}/{1}', json_array(1,true), json_object('k',2));
+[["{\"args\": [[1, true], {\"k\": 2}], \"template\": \"{0}/{0}/{1}\"}"]]
+PASS 2: drop table if exists ai_enhance_prompt;
+PASS 3: create table ai_enhance_prompt(t longtext, a text);
+PASS 4: insert into ai_enhance_prompt values('{0}-ok', 'lob');
+PASS 5: select ai_prompt(t, a) from ai_enhance_prompt;
+[["{\"args\": [\"lob\"], \"template\": \"{0}-ok\"}"]]
+PASS 6: drop table ai_enhance_prompt;
+PASS 7: expected error 11118
+PASS 8: expected error 11112
+PASS 9: call DBMS_AI_SERVICE.CREATE_AI_MODEL(
+PASS 10: call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT(
+PASS 11: select length(ai_complete('enhance_complete', 'hello', null)) > 0 as complete_ok;
+[[1]]
+PASS 12: select length(ai_complete(
+[[1]]
+PASS 13: expected error 11118
+PASS 14: expected error 11112
+PASS 15: call DBMS_AI_SERVICE.CREATE_AI_MODEL(
+PASS 16: call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT(
+PASS 17: select json_length(ai_embed('enhance_embed', 'single-row')) as embed_dimension;
+[[768]]
+PASS 18: select json_length(ai_embed('enhance_embed', 'dimension-row', 768)) as requested_dimension;
+[[768]]
+PASS 19: drop table if exists ai_enhance_batch;
+PASS 20: create table ai_enhance_batch(id int primary key, content text);
+PASS 21: insert into ai_enhance_batch values(1,'first'),(2,null),(3,'third');
+PASS 22: select id, json_length(ai_embed('enhance_embed', content)) as dimension
+[[1, 768], [2, null], [3, 768]]
+PASS 23: drop table ai_enhance_batch;
+PASS 24: expected error 11118
+PASS 25: expected error 11112
+PASS 26: call DBMS_AI_SERVICE.CREATE_AI_MODEL(
+PASS 27: call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT(
+PASS 28: select json_length(ai_rerank('enhance_rerank','apple',
+[[4]]
+PASS 29: select json_unquote(json_extract(r, '$[0].id')) as first_id,
+[["a", 2]]
+PASS 30: expected error 11118
+PASS 31: expected error 11112
+PASS 32: call DBMS_AI_SERVICE.CREATE_AI_MODEL(
+PASS 33: call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT(
+PASS 34: select provider from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS
+[["ollama"]]
+PASS 35: call DBMS_AI_SERVICE.ALTER_AI_MODEL_ENDPOINT(
+PASS 36: select provider from oceanbase.DBA_OB_AI_MODEL_ENDPOINTS
+[["Ollama"]]
+PASS 37: select length(ai_complete('enhance_ollama_complete', 'hello')) > 0 as ollama_complete_ok;
+[[1]]
+PASS 38: expected error 11118
+PASS 39: expected error 11112
+PASS 40: call DBMS_AI_SERVICE.CREATE_AI_MODEL(
+PASS 41: call DBMS_AI_SERVICE.CREATE_AI_MODEL_ENDPOINT(
+PASS 42: select json_valid(ai_embed('enhance_ollama_embed', 'hello')) as ollama_embed_ok;
+[[1]]
+PASS 43: call DBMS_AI_SERVICE.DROP_AI_MODEL('enhance_complete');
+PASS 44: call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('enhance_complete_ep');
+PASS 45: call DBMS_AI_SERVICE.DROP_AI_MODEL('enhance_embed');
+PASS 46: call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('enhance_embed_ep');
+PASS 47: call DBMS_AI_SERVICE.DROP_AI_MODEL('enhance_rerank');
+PASS 48: call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('enhance_rerank_ep');
+PASS 49: call DBMS_AI_SERVICE.DROP_AI_MODEL('enhance_ollama_complete');
+PASS 50: call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('enhance_ollama_complete_ep');
+PASS 51: call DBMS_AI_SERVICE.DROP_AI_MODEL('enhance_ollama_embed');
+PASS 52: call DBMS_AI_SERVICE.DROP_AI_MODEL_ENDPOINT('enhance_ollama_embed_ep');
+52 statements; 0 failures

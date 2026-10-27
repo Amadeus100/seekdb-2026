@@ -147,14 +147,35 @@ int ObFunctionTableOp::get_current_result(ObObj &result)
 
 int ObFunctionTableOp::inner_get_next_row()
 {
+  clear_evaluated_flag();
   return (this->*next_row_func_)();
 }
 
+int ObFunctionTableOp::inner_get_next_batch(int64_t max_row_cnt)
+{
+  int ret = OB_SUCCESS;
+  clear_evaluated_flag();
+  brs_.size_ = 0;
+  brs_.end_ = false;
+  const int64_t count = std::min<int64_t>(16, std::min(max_row_cnt, MY_SPEC.max_batch_size_));
+  if (file_scan_ == nullptr || count <= 0) { return OB_ERR_UNEXPECTED; }
+  brs_.skip_->reset(count);
+  ObEvalCtx::BatchInfoScopeGuard guard(eval_ctx_);
+  guard.set_batch_size(count);
+  for (int64_t i = 0; OB_SUCC(ret) && i < count; ++i) {
+    guard.set_batch_idx(i);
+    if (OB_FAIL(inner_get_next_row_file())) {
+      if (ret == OB_ITER_END) { ret = OB_SUCCESS; brs_.end_ = true; }
+      break;
+    }
+    ++brs_.size_;
+  }
+  return ret;
+}
 
 int ObFunctionTableOp::inner_get_next_row_file()
 {
   int ret = OB_SUCCESS;
-  clear_evaluated_flag();
   bool end = false;
   if (OB_FAIL(ctx_.check_status())) {
   } else if (!file_scan_->scanner.next(file_scan_->row, end)) {

@@ -10,7 +10,6 @@
 #include <cstdio>
 #include <filesystem>
 #include <limits>
-#include <regex>
 #include <atomic>
 #ifndef _WIN32
 #include <fcntl.h>
@@ -26,6 +25,31 @@ namespace fs = std::filesystem;
 namespace {
 constexpr size_t MAX_RECORD = 16 * 1024 * 1024;
 constexpr size_t MAX_COLUMNS = 1024;
+bool valid_options(const Options &o)
+{
+  auto valid = [](char c) { return c != '\0' && c != '\n' && c != '\r'; };
+  return valid(o.delimiter) && valid(o.quote) && valid(o.escape) && o.delimiter != o.quote
+      && o.nullstr.find_first_of(std::string() + o.delimiter + o.quote + '\n' + '\r' + '\0') == std::string::npos;
+}
+// Match basename wildcards without a backtracking regular-expression engine.
+// Advance '?' and '*' by complete UTF-8 characters.
+bool wildcard(const std::string &pattern, const std::string &name)
+{
+  auto next = [](const std::string &s, size_t i) {
+    ++i; while (i < s.size() && (static_cast<unsigned char>(s[i]) & 0xc0) == 0x80) { ++i; }
+    return i;
+  };
+  size_t p = 0, n = 0, star = std::string::npos, retry = 0;
+  while (n < name.size()) {
+    if (p < pattern.size() && pattern[p] == '?') { ++p; n = next(name, n); }
+    else if (p < pattern.size() && pattern[p] == '*') { star = p++; retry = n; }
+    else if (p < pattern.size() && pattern[p] == name[n]) { ++p; ++n; }
+    else if (star != std::string::npos && retry < name.size()) { p = star + 1; n = retry = next(name, retry); }
+    else { return false; }
+  }
+  while (p < pattern.size() && pattern[p] == '*') { ++p; }
+  return p == pattern.size();
+}
 std::string lower(std::string text)
 {
   for (char &c : text) { if (c >= 'A' && c <= 'Z') { c += 'a' - 'A'; } }
@@ -376,8 +400,10 @@ bool FileScan::json_record(std::vector<std::string> &names, std::vector<Cell> &r
 bool FileScan::infer(const Options &options, Schema &schema)
 {
   schema_ = Schema(); schema_.options = options; error_.clear(); inference_ = true;
+  if (!valid_options(options)) { return fail("invalid delimiter, quote, escape or NULL text"); }
   std::string error, canonical;
   if (options.format == "glob") {
+    if (options.path.size() > 4096 || options.path.find('\0') != std::string::npos) { return fail("invalid glob pattern"); }
     fs::path pattern = fs::u8path(options.path);
     if (!secure_path(utf8(pattern.parent_path()), options.secure_root, canonical, error)) { return fail(error); }
     schema_.options.path = canonical + "/" + utf8(pattern.filename());
@@ -462,6 +488,7 @@ void FileScan::project(const std::vector<size_t> &columns)
 bool FileScan::open(const Schema &schema)
 {
   schema_ = schema; error_.clear(); inference_ = false;
+  has_projection_ = false; projection_.clear();
   return rescan();
 }
 bool FileScan::rescan()
@@ -469,19 +496,12 @@ bool FileScan::rescan()
   if (schema_.options.format == "glob") {
     files_.clear(); file_index_ = 0;
     fs::path pattern = fs::u8path(schema_.options.path);
-    std::string expression = "^";
-    for (char c : utf8(pattern.filename())) {
-      if (c == '*') { expression += ".*"; }
-      else if (c == '?') { expression += '.'; }
-      else { if (std::string(".\\+()[]{}^$|").find(c) != std::string::npos) { expression += '\\'; } expression += c; }
-    }
-    expression += '$';
-    std::regex matcher(expression);
+    const std::string filename_pattern = utf8(pattern.filename());
     std::error_code ec;
     fs::directory_iterator it(pattern.parent_path(), ec), end;
     if (ec) { return fail("cannot discover directory"); }
     while (it != end) {
-      if (std::regex_match(utf8(it->path().filename()), matcher) && it->is_regular_file(ec)) {
+      if (wildcard(filename_pattern, utf8(it->path().filename())) && it->is_regular_file(ec)) {
         std::string canonical, error;
         if (!secure_path(utf8(it->path()), schema_.options.secure_root, canonical, error)) { return fail(error); }
         files_.push_back(canonical);
@@ -540,6 +560,7 @@ bool CsvCopyWriter::fail(const std::string &message) { error_ = message; return 
 bool CsvCopyWriter::open(const Schema &schema)
 {
   abort(); error_.clear(); schema_ = schema;
+  if (!valid_options(schema.options)) { return fail("invalid COPY delimiter, quote, escape or NULL text"); }
   fs::path path = fs::u8path(schema.options.path);
   target_ = utf8(path.filename());
   if (target_.empty() || target_ == "." || target_ == ".." || target_.find('\0') != std::string::npos) {

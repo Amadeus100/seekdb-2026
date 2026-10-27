@@ -1,3 +1,24 @@
+# 2026-10-27 恢复进展（以下是当前状态）
+
+用户已要求继续，当前状态为开发中。报名仓库、此前入门题 UUID、Fork 和 PR 保持不变；尚未向远程推送本次内核题代码。
+
+- 文件 SQL 原先的 1210 问题已定位并修复：Schema 相关路径/选项不得被参数化，动态 VARCHAR 列需要设置隐式排序规则属性。
+- 修复 DESCRIBE 标记占用参数计数字段的问题，重新生成本地解析器；COPY table 和 COPY query 都已验证。
+- 文件扫描接入原生批量算子，PL/普通集合表函数保留原有标量路径。
+- 文件 SQL 官方主流程 15 条 SQL 无执行错误；7 组 Python 集成断言通过，覆盖真实 SQL 过滤/聚合/INNER/LEFT/同文件 JOIN、重扫、Schema、NULL、日期、选项、文件变更、Snappy 多 Row Group/可空/列裁剪、COPY 表/查询/禁止覆盖/失败清理。
+- 最新独立扫描器 693 项检查通过。Parquet V2 布尔 RLE、重新打开文件时列裁剪状态、资源上限、glob 无正则匹配和 CSV 选项校验均已补充。
+- AI 增强官方主流程 52 条 SQL、原有 AI_PROMPT 101 条 SQL 无执行错误；5 组协议断言通过，覆盖 JSON/嵌套/非法模板、长文本、配置、跨行分组/乱序/NULL/过滤/LIMIT、异常响应、分批稳定重排与 Ollama 原生协议。
+- 修复 Ollama ALTER Provider 后空密钥被存为 SQL NULL 导致调用失败的问题，并保持其他 Provider 的密钥校验。
+- Windows seekdb 编译通过，专用实例端口 2884 正在运行（PID 以英文目录 kernel-test-3/test-server.pid 为准）。本地 Mock 18000 也在运行。测试和构建命令在仓库外 ../native-build.ps1、../restart-kernel-test.ps1、../test-file-scanner.ps1；普通 mysqltest 语句执行辅助器为 ../run-kernel-sql.py，带完整结果断言的集成测试已在 unittest/ 下。
+- AI 列仍未接入构建。已修正草稿 include 和向量维度错误码，新增同 DDL 事务保存元数据的服务草稿；这些不能视为已实现 AI 列。
+- 待完成：AI 列完整事务链路、Schema/任务/调度/重试/严格读取/索引一致性，以及 Linux 编译与比赛平台评测。
+
+验证输出位于本目录 evidence/。本地通过不代表隐藏测试或比赛平台已通过。
+
+---
+
+以下为暂停时的历史记录，其中的“当前阻点/尚待验证”以以上恢复进展为准。
+
 # 内核三题暂停记录
 
 暂停日期：2026-10-27（Asia/Shanghai）。用户要求暂停并保存状态，等待后续继续。

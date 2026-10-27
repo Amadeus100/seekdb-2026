@@ -6486,6 +6486,11 @@ int ObStaticEngineCG::check_op_vectorization(ObLogicalOperator *op, ObSqlSchemaG
        // TODO: @yunyi enable vectorization in multivalue index
        disable_vectorize = true;
     }
+  } else if (log_op_def::LOG_FUNCTION_TABLE == op->get_type()) {
+    ObRawExpr *value = static_cast<ObLogFunctionTable *>(op)->get_value_expr();
+    // File descriptors have a batch scanner. Preserve the existing scalar
+    // execution path for PL collections and system table functions.
+    disable_vectorize = value == nullptr || !value->is_const_raw_expr();
   } else if (log_op_def::LOG_SUBPLAN_FILTER == op->get_type()) {
     ObLogSubPlanFilter *spf_op = static_cast<ObLogSubPlanFilter *>(op);
     if (spf_op->is_update_set()) {

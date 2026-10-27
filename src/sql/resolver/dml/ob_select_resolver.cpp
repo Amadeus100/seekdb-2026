@@ -1014,7 +1014,8 @@ int ObSelectResolver::resolve_file_copy(const ParseNode &node)
     ParseResult parsed;
     ObParser parser(*allocator_, session_info_->get_sql_mode());
     ObSqlString query;
-    if (source->type_ == T_RELATION_FACTOR && source->num_child_ == 2) {
+    if (source->type_ == T_RELATION_FACTOR && (source->num_child_ == 2
+        || (source->num_child_ == 3 && source->children_[2] == nullptr))) {
       ret = query.append("SELECT * FROM ");
       for (int i = 0; OB_SUCC(ret) && i < 2; ++i) {
         if (OB_ISNULL(source->children_[i])) { continue; }

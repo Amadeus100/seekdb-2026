@@ -13,6 +13,16 @@
 namespace oceanbase { namespace sql { namespace file_sql {
 namespace {
 constexpr size_t MAX_PAGE = 64 * 1024 * 1024;
+constexpr size_t MAX_RETAINED = 128 * 1024 * 1024;
+size_t cell_memory(const std::vector<Cell> &cells)
+{
+  size_t bytes = cells.capacity() * sizeof(Cell);
+  for (const Cell &cell : cells) {
+    if (cell.text.capacity() > MAX_RETAINED - std::min(bytes, MAX_RETAINED)) { return MAX_RETAINED + 1; }
+    bytes += cell.text.capacity();
+  }
+  return bytes;
+}
 struct CompactValue {
   int64_t number = 0;
   std::string text;
@@ -39,7 +49,7 @@ struct CompactReader {
     return false;
   }
   bool read(int type, CompactValue &v, unsigned depth = 0) {
-    if (depth > 32 || ++nodes > 1000000) { return false; }
+    if (depth > 32 || ++nodes > 100000) { return false; }
     uint64_t n = 0;
     switch (type) {
       case 1: v.number = 1; return true;
@@ -55,7 +65,8 @@ struct CompactReader {
         if (pos == length) { return false; }
         unsigned char header = data[pos++]; n = header >> 4;
         if (n == 15 && !varint(n)) { return false; }
-        if (n > 1000000) { return false; }
+        if (n > 100000 - nodes) { return false; }
+        nodes += n; // Account for list storage before allocating its elements.
         v.list.resize(n);
         for (auto &item : v.list) { if (!read(header & 15, item, depth + 1)) { return false; } }
         return true;
@@ -183,6 +194,14 @@ struct ParquetReader::Impl {
   std::vector<Group> groups;
   std::vector<Cursor> cursors;
   std::vector<bool> projection;
+  size_t retained_memory() const {
+    size_t bytes = 0;
+    for (const Cursor &cursor : cursors) {
+      bytes += cell_memory(cursor.dictionary) + cell_memory(cursor.page);
+      if (bytes > MAX_RETAINED) { break; }
+    }
+    return bytes;
+  }
   bool fail(const char *text) { message = text; return false; }
   bool read(uint64_t offset, size_t length, std::vector<unsigned char> &buffer) {
     if (offset > size || length > size - offset || length > MAX_PAGE) { return fail("invalid Parquet byte range"); }
@@ -191,7 +210,10 @@ struct ParquetReader::Impl {
     return stream.gcount() == static_cast<std::streamsize>(length) || fail("truncated Parquet file");
   }
   bool plain(const unsigned char *data, size_t length, size_t count, const Field &field, std::vector<Cell> &out) {
-    out.clear(); out.reserve(count); size_t pos = 0;
+    std::vector<Cell>().swap(out);
+    size_t used = retained_memory() + count * sizeof(Cell);
+    if (used > MAX_RETAINED) { return fail("Parquet retained page memory exceeds 128 MiB"); }
+    out.reserve(count); size_t pos = 0;
     for (size_t i = 0; i < count; ++i) {
       Cell cell; cell.null = false;
       size_t bytes = field.type == 1 || field.type == 4 ? 4 : field.type == 2 || field.type == 5 ? 8 : field.type == 7 ? field.width : 0;
@@ -235,12 +257,15 @@ struct ParquetReader::Impl {
         cell.text.assign(reinterpret_cast<const char *>(data + pos), bytes);
       } else { return fail("unsupported Parquet physical type"); }
       if (field.type != 0) { pos += bytes; }
+      if (cell.text.capacity() > MAX_RETAINED - used) { return fail("Parquet decoded values exceed 128 MiB"); }
+      used += cell.text.capacity();
       out.push_back(std::move(cell));
     }
     return true;
   }
   bool page(size_t column) {
     Cursor &cursor = cursors[column]; const Chunk &chunk = groups[group].chunks[column]; const Field &field = fields[column];
+    std::vector<Cell>().swap(cursor.page);
     while (cursor.offset < cursor.end) {
       std::vector<unsigned char> header_bytes;
       if (!read(cursor.offset, std::min<uint64_t>(65536, cursor.end - cursor.offset), header_bytes)) { return false; }
@@ -297,19 +322,39 @@ struct ParquetReader::Impl {
       std::vector<Cell> values;
       if (encoding == 0) {
         if (!plain(decoded.data() + pos, decoded.size() - pos, nonnull, field, values)) { return false; }
+      } else if (encoding == 3 && field.type == 0) {
+        // RLE boolean values carry a four-byte length in both page versions.
+        // https://parquet.apache.org/docs/file-format/data-pages/encodings/
+        if (decoded.size() - pos < 4) { return fail("missing Parquet boolean RLE length"); }
+        size_t length = little32(decoded.data() + pos); pos += 4;
+        std::vector<uint32_t> booleans;
+        if (length > decoded.size() - pos
+            || !hybrid(decoded.data() + pos, length, 1, nonnull, booleans)) {
+          return fail("invalid Parquet boolean RLE values");
+        }
+        for (uint32_t value : booleans) { values.push_back({value ? "true" : "false", false, false}); }
       } else if (encoding == 2 || encoding == 8) {
         if (pos >= decoded.size()) { if (nonnull) { return fail("missing Parquet dictionary indices"); } }
         else {
           std::vector<uint32_t> indices;
           unsigned width = decoded[pos++];
           if (!hybrid(decoded.data() + pos, decoded.size() - pos, width, nonnull, indices)) { return fail("invalid dictionary indices"); }
+          size_t used = retained_memory() + nonnull * sizeof(Cell);
+          if (used > MAX_RETAINED) { return fail("Parquet dictionary expansion exceeds 128 MiB"); }
+          values.reserve(nonnull);
           for (auto index : indices) {
             if (index >= cursor.dictionary.size()) { return fail("Parquet dictionary index out of range"); }
+            const size_t extra = cursor.dictionary[index].text.size() * 2 + 32;
+            if (extra > MAX_RETAINED - used) { return fail("Parquet dictionary expansion exceeds 128 MiB"); }
+            used += extra;
             values.push_back(cursor.dictionary[index]);
           }
         }
       } else { return fail("unsupported Parquet data encoding"); }
-      cursor.page.clear(); cursor.page.reserve(count); cursor.index = 0;
+      if (retained_memory() + cell_memory(values) + count * sizeof(Cell) > MAX_RETAINED) {
+        return fail("Parquet retained page memory exceeds 128 MiB");
+      }
+      cursor.page.reserve(count); cursor.index = 0;
       size_t value = 0;
       for (auto level : levels) { cursor.page.push_back(level ? std::move(values[value++]) : Cell()); }
       return true;

@@ -1,24 +1,25 @@
 {
   "checkpoint_date": "2026-10-27",
   "timezone": "Asia/Shanghai",
-  "status": "paused_by_user",
+  "status": "active",
   "ready_for_evaluation": false,
   "branch": "wip/ai-file-column-2026",
   "pushed": false,
   "base_merge_commit": "77f2d746a2df0cca445d7d5f5c77457b8b898c43",
   "windows_seekdb_build": "passed; AI COLUMN drafts are excluded from the source inventory",
   "file_scanner_checks": {
-    "previous_passed_count": 77,
-    "latest_changes_retested": false
+    "passed_count": 693,
+    "latest_changes_retested": true,
+    "scope": "CSV/JSONL/COPY, Snappy and plain Parquet V1/V2, nullable, 4 Row Groups, projection, resource-limited reader"
   },
   "sql": {
     "server_start": "passed with fresh 1G data file",
     "ai_prompt_json_arguments": "passed",
-    "ai_functions_full_mock_suite": "not run",
-    "file_tables": "blocked by unresolved SQL error 1210 on older runtime snapshot",
-    "latest_diagnostic_binary_deployed": false,
-    "ai_column": "draft only; not built or integrated"
+    "ai_functions_full_mock_suite": "52 official main statements and 101 existing AI_PROMPT statements: no execution errors; 5 protocol integration test groups passed",
+    "file_tables": "official main: 15 statements, no errors; 7 integration test groups with result assertions passed, including native batch scanning, JOIN, COPY table/query and cleanup",
+    "latest_diagnostic_binary_deployed": true,
+    "ai_column": "draft; not yet built or integrated"
   },
   "test_database_pid_46648": "stopped at pause; mysqladmin shutdown was unsupported, process was stopped after exact executable-path verification",
-  "next_step": "Deploy the latest successful build and diagnose file table schema resolution before continuing kernel implementation."
+  "next_step": "Implement native AI COLUMN DDL metadata, transactional task creation, worker, retries and strict reads; then run Linux validation. Do not report all three tasks complete."
 }

@@ -76,6 +76,62 @@ int main(int argc, char **argv)
   while (scan.next(row, end) && !end) { CHECK(!row[0].null && row[0].text == std::to_string(parquet_rows)); ++parquet_rows; }
   if (!scan.error().empty()) { std::cerr << scan.error() << '\n'; }
   CHECK(end && parquet_rows == 7); CHECK(scan.rescan()); CHECK(scan.next(row, end) && !end && row[0].text == "0");
+  scan.close();
+  options.format = "csv"; options.path = (dir / "types.data").generic_string();
+  write(options.path, "a,b,c\n9007199254740993,,2024-01-01\n1.5,,2024-01-01 12:00:00\n");
+  CHECK(scan.infer(options, schema));
+  CHECK(schema.columns[0].type == Type::Varchar);
+  CHECK(schema.columns[1].type == Type::Null && schema.columns[1].nullable);
+  CHECK(schema.columns[2].type == Type::Datetime);
+  write(options.path, "a\n\xff\n"); CHECK(!scan.infer(options, schema));
+  options.format = "json";
+  write(options.path, "{\"n\":\"123\",\"null\":null}\n{\"n\":123}\n");
+  CHECK(scan.infer(options, schema));
+  CHECK(schema.columns[0].type == Type::Varchar && schema.columns[1].type == Type::Null);
+
+  fs::path output_dir = dir / "copy"; fs::create_directories(output_dir);
+  Schema output;
+  output.options = options; output.options.format = "csv";
+  output.options.path = (output_dir / "roundtrip.csv").generic_string();
+  output.options.nullstr = "NULL";
+  output.columns = {{"first", Type::Varchar, true}, {"second", Type::Varchar, false}};
+  fs::remove(output.options.path); // Only this test's explicitly named output.
+  CsvCopyWriter writer;
+  CHECK(writer.open(output));
+  CHECK(writer.append({{"", true, false}, {"NULL", false, false}}));
+  CHECK(writer.append({{"a,\"b\"\nworld", false, false}, {"", false, false}}));
+  CHECK(writer.commit()); CHECK(!writer.open(output));
+  CHECK(scan.infer(output.options, schema)); CHECK(scan.open(schema));
+  CHECK(scan.next(row, end) && !end && row[0].null && !row[1].null && row[1].text == "NULL");
+  CHECK(scan.next(row, end) && !end && row[0].text == "a,\"b\"\nworld" && !row[1].null && row[1].text.empty());
+  scan.close();
+  output.options.path = (output_dir / "aborted.csv").generic_string();
+  CHECK(writer.open(output)); writer.abort(); CHECK(!fs::exists(output.options.path));
+  for (auto &entry : fs::directory_iterator(output_dir)) { CHECK(entry.path().extension() != ".tmp"); }
+
+  for (const char *name : {"snappy_v1.parquet", "snappy_v2.parquet", "plain_v2.parquet"}) {
+    options.format = "parquet"; options.path = (fs::path(argv[2]).parent_path() / name).generic_string();
+    if (!fs::exists(options.path)) { continue; }
+    options.secure_root = fs::path(argv[2]).parent_path().generic_string();
+    CHECK(scan.infer(options, schema)); CHECK(schema.columns.size() == 7);
+    CHECK(scan.open(schema));
+    int n = 0;
+    while (scan.next(row, end) && !end) {
+      CHECK(row[0].text == std::to_string(n));
+      CHECK(row[1].null == (n % 3 == 0));
+      if (!row[1].null) { CHECK(row[1].text == std::to_string(n * 10)); }
+      CHECK(row[2].text == (n % 2 ? "true" : "false"));
+      CHECK(row[3].text == std::string("unicode-") + "你好" + std::to_string(n % 4));
+      CHECK(row[4].text == "2024-02-29");
+      CHECK(row[5].text == "1969-12-31 23:59:59.999999");
+      CHECK(row[6].text == "18446744073709551615");
+      ++n;
+    }
+    if (!end) { std::cerr << scan.error() << '\n'; }
+    CHECK(end && n == 25);
+    CHECK(scan.rescan()); scan.project({0}); CHECK(scan.next(row, end) && !end && row[0].text == "0");
+    CHECK(row[1].null && row[2].null); scan.close();
+  }
   std::cout << checks << " file scanner checks passed\n";
   return 0;
 }

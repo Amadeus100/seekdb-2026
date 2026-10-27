@@ -1,0 +1,12 @@
+test_bounds_bad_data_and_switch (__main__.FileSQLTest.test_bounds_bad_data_and_switch) ... ok
+test_copy_roundtrip_and_no_overwrite (__main__.FileSQLTest.test_copy_roundtrip_and_no_overwrite) ... ok
+test_copy_table_and_runtime_failure_cleanup (__main__.FileSQLTest.test_copy_table_and_runtime_failure_cleanup) ... ok
+test_csv_options_and_json_types (__main__.FileSQLTest.test_csv_options_and_json_types) ... ok
+test_native_filter_group_join_and_rescan (__main__.FileSQLTest.test_native_filter_group_join_and_rescan) ... ok
+test_parquet_multi_group_nullable_projection (__main__.FileSQLTest.test_parquet_multi_group_nullable_projection) ... ok
+test_schema_and_full_inference_after_changes (__main__.FileSQLTest.test_schema_and_full_inference_after_changes) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 3.975s
+
+OK

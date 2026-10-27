@@ -1,0 +1,25 @@
+PASS 1: select @@session.enable_file_sql AS default_enabled;
+[[0]]
+PASS 2: expected error 1235
+PASS 3: set session enable_file_sql = ON;
+PASS 4: select count(*) from read_csv('C:/Users/R9000P/.codex/visualizations/2026/10/26/01a17623-3399-72a1-b473-73a01a05faa4/kernel-fixtures/basic.csv');
+[[3]]
+PASS 5: expected error 1064
+PASS 6: expected error 1235
+PASS 7: select id, name, score, active, day, created,
+[[1, "Alice", 98.5, 1, "2026-08-01", "2026-08-01 10:11:12", "hello,<NL>world", 101], [2, "Bob", 87.0, 0, null, null, "plain", 102], [3, "Chen", 90.25, 1, "2026-08-03", "2026-08-03 12:13:14", "say \"hi\"", 103]]
+PASS 8: select count(*) AS row_count, sum(id) AS id_sum,
+[[3, "6", 91.92, "2"]]
+PASS 9: select id, name, score, active, day, note
+[[1, "Alice", 98.5, 1, null, null], [2, "Bob", null, 0, "2026-08-02", null], [3, "Chen", 90.0, 1, null, "ok"]]
+PASS 10: describe select * from read_csv('C:/Users/R9000P/.codex/visualizations/2026/10/26/01a17623-3399-72a1-b473-73a01a05faa4/kernel-fixtures/basic.csv');
+[["id", "BIGINT", "NO", null, null, null], ["name", "VARCHAR", "NO", null, null, null], ["score", "DOUBLE", "NO", null, null, null], ["active", "BOOLEAN", "NO", null, null, null], ["day", "DATE", "YES", null, null, null], ["created", "DATETIME", "YES", null, null, null], ["note", "VARCHAR", "NO", null, null, null], ["id__2", "BIGINT", "NO", null, null, null]]
+PASS 11: select count(*) AS row_count, min(c1) AS min_c1,
+[[7, 0, 6, "21"]]
+PASS 12: select substring_index(file, '/', -1) AS file
+[["basic.csv"], ["basic.jsonl"], ["invalid.txt"], ["plain_v2.parquet"], ["simple.parquet"], ["snappy_v1.parquet"], ["snappy_v2.parquet"]]
+PASS 13: copy (select id, name, score
+PASS 14: select id, name, score
+[[1, "Alice", 98.5], [2, "Bob", 87.0], [3, "Chen", 90.25]]
+PASS 15: set session enable_file_sql = OFF;
+15 statements; 0 failures

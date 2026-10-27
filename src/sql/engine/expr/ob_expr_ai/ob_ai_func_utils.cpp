@@ -1700,6 +1700,9 @@ int ObAIFuncPromptObjectUtils::replace_all_str_args_in_template(
           ret = buffer.append(text.ptr() + start, pos - start);
         } else {
           ++pos;
+          const bool negative = pos < text.length() && text.ptr()[pos] == '-';
+          if (negative) { ++pos; }
+          const int64_t digits_start = pos;
           uint64_t index = 0;
           bool overflow = false;
           while (pos < text.length() && text.ptr()[pos] >= '0' && text.ptr()[pos] <= '9') {
@@ -1707,8 +1710,8 @@ int ObAIFuncPromptObjectUtils::replace_all_str_args_in_template(
             if (index > (UINT64_MAX - digit) / 10) { overflow = true; }
             if (!overflow) { index = index * 10 + digit; }
           }
-          if (pos > start + 1 && pos < text.length() && text.ptr()[pos] == '}') {
-            if (overflow || index >= args->element_count()) {
+          if (pos > digits_start && pos < text.length() && text.ptr()[pos] == '}') {
+            if (negative || overflow || index >= args->element_count()) {
               ret = OB_INVALID_ARGUMENT;
               LOG_USER_ERROR(OB_INVALID_ARGUMENT, "ai_prompt: invalid placeholder index");
             } else {

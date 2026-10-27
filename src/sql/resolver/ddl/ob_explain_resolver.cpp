@@ -33,7 +33,7 @@ int ObExplainResolver::resolve(const ParseNode &parse_tree)
 {
   int ret = OB_SUCCESS;
 
-  if (parse_tree.type_ == T_EXPLAIN && parse_tree.value_ == 1
+  if (parse_tree.type_ == T_EXPLAIN && parse_tree.reserved_ == 1
       && parse_tree.num_child_ == 5 && OB_NOT_NULL(parse_tree.children_[4])) {
     ObStmt *child = nullptr;
     ObResolver resolver(params_);
