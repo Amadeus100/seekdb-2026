@@ -53,6 +53,7 @@ public:
   explicit ObSelectResolver(ObResolverParams &params);
   virtual ~ObSelectResolver();
 
+  int resolve_file_copy(const ParseNode &parse_tree);
   virtual int resolve(const ParseNode &parse_tree);
   ObSelectStmt *get_select_stmt();
   void set_calc_found_rows(bool found_rows) { has_calc_found_rows_ = found_rows; }

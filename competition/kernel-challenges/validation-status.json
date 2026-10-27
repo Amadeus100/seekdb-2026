@@ -1,0 +1,24 @@
+{
+  "checkpoint_date": "2026-10-27",
+  "timezone": "Asia/Shanghai",
+  "status": "paused_by_user",
+  "ready_for_evaluation": false,
+  "branch": "wip/ai-file-column-2026",
+  "pushed": false,
+  "base_merge_commit": "77f2d746a2df0cca445d7d5f5c77457b8b898c43",
+  "windows_seekdb_build": "passed; AI COLUMN drafts are excluded from the source inventory",
+  "file_scanner_checks": {
+    "previous_passed_count": 77,
+    "latest_changes_retested": false
+  },
+  "sql": {
+    "server_start": "passed with fresh 1G data file",
+    "ai_prompt_json_arguments": "passed",
+    "ai_functions_full_mock_suite": "not run",
+    "file_tables": "blocked by unresolved SQL error 1210 on older runtime snapshot",
+    "latest_diagnostic_binary_deployed": false,
+    "ai_column": "draft only; not built or integrated"
+  },
+  "test_database_pid_46648": "stopped at pause; mysqladmin shutdown was unsupported, process was stopped after exact executable-path verification",
+  "next_step": "Deploy the latest successful build and diagnose file table schema resolution before continuing kernel implementation."
+}

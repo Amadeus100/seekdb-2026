@@ -281,6 +281,7 @@ class ObAIFuncUtils
 public:
   ObAIFuncUtils() {}
   virtual ~ObAIFuncUtils() {}
+  static int validate_embedding(ObIJsonBase *value, int64_t &dimension);
   static bool is_completion_type(const ObAIFuncExprInfo *info) {return info->type_ == share::EndpointType::COMPLETION;}
   static bool is_dense_embedding_type(const ObAIFuncExprInfo *info) {return info->type_ == share::EndpointType::DENSE_EMBEDDING;}
   static bool is_rerank_type(const ObAIFuncExprInfo *info) {return info->type_ == share::EndpointType::RERANK;}

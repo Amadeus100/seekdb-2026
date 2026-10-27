@@ -27,15 +27,17 @@ namespace sql
 {
 
 class ObExpr;
+struct FileScanState;
 class ObFunctionTableSpec : public ObOpSpec
 {
 OB_UNIS_VERSION_V(1);
 public:
   ObFunctionTableSpec(common::ObIAllocator &alloc, const ObPhyOperatorType type)
-    : ObOpSpec(alloc, type), value_expr_(nullptr), column_exprs_(alloc), has_correlated_expr_(false)
+    : ObOpSpec(alloc, type), value_expr_(nullptr), column_exprs_(alloc), file_column_ids_(alloc), has_correlated_expr_(false)
   {}
   ObExpr *value_expr_;
   common::ObFixedArray<ObExpr*, common::ObIAllocator> column_exprs_;
+  common::ObFixedArray<uint64_t, common::ObIAllocator> file_column_ids_;
   bool has_correlated_expr_;
 };
 
@@ -48,7 +50,8 @@ public:
     already_calc_(false),
     row_count_(0),
     col_count_(0),
-    value_table_(NULL) 
+    value_table_(NULL),
+    file_scan_(nullptr)
   {}
 
   virtual int inner_open() override;
@@ -58,6 +61,7 @@ public:
   virtual int inner_close() override;
   virtual void destroy() override;
 private:
+  int inner_get_next_row_file();
   int inner_get_next_row_udf();
   int inner_get_next_row_sys_func();
   int get_current_result(common::ObObj &result);
@@ -67,6 +71,7 @@ private:
   int64_t col_count_;
   common::ObObj value_;
   pl::ObPLCollection *value_table_;
+  FileScanState *file_scan_;
   int (ObFunctionTableOp::*next_row_func_)();
 };
 

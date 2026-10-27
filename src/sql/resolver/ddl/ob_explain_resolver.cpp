@@ -17,6 +17,9 @@
 #define USING_LOG_PREFIX SQL_RESV
 #include "sql/resolver/ddl/ob_explain_resolver.h"
 #include "sql/resolver/ob_resolver.h"
+#include "sql/resolver/dml/ob_select_stmt.h"
+#include "sql/parser/ob_parser.h"
+#include "lib/string/ob_sql_string.h"
 
 using namespace oceanbase;
 using namespace sql;
@@ -29,6 +32,57 @@ const static int64_t EXPLAIN_CHILD_STMT = 4;
 int ObExplainResolver::resolve(const ParseNode &parse_tree)
 {
   int ret = OB_SUCCESS;
+
+  if (parse_tree.type_ == T_EXPLAIN && parse_tree.value_ == 1
+      && parse_tree.num_child_ == 5 && OB_NOT_NULL(parse_tree.children_[4])) {
+    ObStmt *child = nullptr;
+    ObResolver resolver(params_);
+    if (OB_FAIL(resolver.resolve(ObResolver::IS_NOT_PREPARED_STMT, *parse_tree.children_[4], child))) {
+    } else if (OB_ISNULL(child) || !child->is_select_stmt()) { ret = OB_INVALID_ARGUMENT;
+    } else {
+      ObSelectStmt *select = static_cast<ObSelectStmt *>(child);
+      ObSqlString query;
+      auto literal = [&](const ObString &text) -> int {
+        int ret = query.append("CONVERT(0x");
+        for (int64_t i = 0; OB_SUCC(ret) && i < text.length(); ++i) {
+          ret = query.append_fmt("%02x", static_cast<unsigned char>(text.ptr()[i]));
+        }
+        if (OB_SUCC(ret)) { ret = query.append(" USING utf8mb4)"); }
+        return ret;
+      };
+      for (int64_t i = 0; OB_SUCC(ret) && i < select->get_select_item_size(); ++i) {
+        const SelectItem &item = select->get_select_item(i);
+        const char *type = "VARCHAR";
+        switch (item.expr_->get_data_type()) {
+          case ObIntType: type = "BIGINT"; break;
+          case ObDoubleType: type = "DOUBLE"; break;
+          case ObTinyIntType: type = "BOOLEAN"; break;
+          case ObDateType: type = "DATE"; break;
+          case ObDateTimeType: type = "DATETIME"; break;
+          case ObNullType: type = "NULL"; break;
+          default: break;
+        }
+        if (OB_FAIL(query.append(i == 0 ? "SELECT " : " UNION ALL SELECT "))) {
+        } else if (OB_FAIL(literal(item.alias_name_.empty() ? item.expr_name_ : item.alias_name_))) {
+        } else if (OB_FAIL(query.append(" AS column_name, "))) {
+        } else if (OB_FAIL(literal(ObString(type)))) {
+        } else {
+          ret = query.append_fmt(" AS column_type, '%s' AS `null`, NULL AS `key`, NULL AS `default`, NULL AS extra",
+              item.expr_->get_result_flag() & NOT_NULL_FLAG ? "NO" : "YES");
+        }
+      }
+      ObString sql;
+      ParseResult parsed;
+      ObParser parser(*allocator_, session_info_->get_sql_mode());
+      if (OB_FAIL(ret)) {
+      } else if (OB_FAIL(ob_write_string(*allocator_, query.string(), sql))) {
+      } else if (OB_FAIL(parser.parse(sql, parsed))) {
+      } else if (OB_ISNULL(parsed.result_tree_) || parsed.result_tree_->num_child_ != 1) { ret = OB_ERR_UNEXPECTED;
+      } else if (OB_FAIL(resolver.resolve(ObResolver::IS_NOT_PREPARED_STMT, *parsed.result_tree_->children_[0], stmt_))) {
+      } else { session_info_->set_stmt_type(stmt::T_SELECT); }
+    }
+    return ret;
+  }
   ObExplainStmt *explain_stmt = NULL;
   if (!(T_EXPLAIN == parse_tree.type_  && 5 == parse_tree.num_child_)) {
     ret = OB_ERR_UNEXPECTED;

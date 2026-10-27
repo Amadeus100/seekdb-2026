@@ -1,3 +1,4 @@
+#include "sql/engine/basic/file_scan_utils.h"
 /*
  * Copyright (c) 2025 OceanBase.
  *
@@ -121,6 +122,22 @@ int ObResolverUtils::get_all_function_table_column_names(const TableItem &table_
                                                          ObIArray<ObString> &column_names)
 {
   int ret = OB_SUCCESS;
+  if (OB_NOT_NULL(table_item.function_table_expr_) && table_item.function_table_expr_->is_const_raw_expr()) {
+    const ObObj &value = static_cast<ObConstRawExpr *>(table_item.function_table_expr_)->get_value();
+    file_sql::Schema schema;
+    if (!value.is_string_type() || !file_sql::Schema::decode(
+        std::string(value.get_string().ptr(), value.get_string().length()), schema)) {
+      ret = OB_INVALID_ARGUMENT;
+    } else {
+      for (size_t i = 0; OB_SUCC(ret) && i < schema.columns.size(); ++i) {
+        ObString name(schema.columns[i].name.size(), schema.columns[i].name.data());
+        ObString copied;
+        if (OB_FAIL(ob_write_string(*params.allocator_, name, copied))) {
+        } else { ret = column_names.push_back(copied); }
+      }
+    }
+    return ret;
+  }
   ObRawExpr *table_expr = NULL;
   ObPLPackageGuard *package_guard = nullptr;
   const ObUserDefinedType *user_type = NULL;
@@ -1678,6 +1695,7 @@ stmt::StmtType ObResolverUtils::get_stmt_type_by_item_type(const ObItemType item
     type = stmt::item_type;      \
   } break;
       // dml
+      case T_FILE_SQL_COPY: type = stmt::T_SELECT; break;
       SET_STMT_TYPE(T_SELECT);
       SET_STMT_TYPE(T_INSERT);
       SET_STMT_TYPE(T_DELETE);

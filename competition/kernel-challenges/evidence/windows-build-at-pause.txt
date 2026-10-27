@@ -1,0 +1,7 @@
+ninja: Entering directory `C:/Users/R9000P/.codex/visualizations/2026/10/26/01a17623-3399-72a1-b473-73a01a05faa4/build-kernel'
+[0/2] Re-checking globbed directories...
+[1/5] Building CXX object src/sql/CMakeFiles/ob_sql.dir/Unity/unity_ob_sql_ob_sql_resolver_0_c___cxx.cxx.obj
+[2/5] Building CXX object src/sql/CMakeFiles/ob_sql.dir/Unity/unity_ob_sql_ob_sql_resolver_dml_0_c___cxx.cxx.obj
+[3/5] Linking CXX static library src\sql\ob_sql_static.lib
+[4/5] Linking CXX executable src\observer\seekdb.exe; Bundling runtime DLLs next to seekdb.exe
+-- BundleRuntimeDllsWindows: bundled 16 DLLs -> C:/Users/R9000P/.codex/visualizations/2026/10/26/01a17623-3399-72a1-b473-73a01a05faa4/build-kernel/src/observer
