@@ -44,8 +44,11 @@ jobs:
         with:
           path: build_release/src/observer/seekdb
           key: kernel-seekdb-${{ hashFiles('src/**', 'cmake/**', 'deps/init/**', 'CMakeLists.txt', 'build.sh', 'rust/**') }}
+          # One-time migration of the binary built at 7902e2d: only use the
+          # previous post-build cache when the pre-build source hash matches.
+          restore-keys: ${{ hashFiles('src/**', 'cmake/**', 'deps/init/**', 'CMakeLists.txt', 'build.sh', 'rust/**') == 'ee3f29aae4b7b61c150b5a06d50cff1bf7ea56a2c04ebc06ac13a2f93c9d1706' && 'kernel-seekdb-9c61f0319d5200ca116ae536d2c8626e7f9327a91b4df684d0d62f2614859ca9' || 'kernel-seekdb-no-compatible-fallback-' }}
       - name: Compile native seekdb
-        if: steps.binary-cache.outputs.cache-hit != 'true'
+        if: steps.binary-cache.outputs.cache-matched-key == ''
         shell: bash
         run: |
           set -euo pipefail
@@ -55,7 +58,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: build_release/src/observer/seekdb
-          key: kernel-seekdb-${{ hashFiles('src/**', 'cmake/**', 'deps/init/**', 'CMakeLists.txt', 'build.sh', 'rust/**') }}
+          key: ${{ steps.binary-cache.outputs.cache-primary-key }}
       - name: Run native SQL integration assertions
         env:
           SEEKDB_PORT: '2884'
