@@ -1,7 +1,7 @@
 {
   "checkpoint_date": "2026-10-28",
   "timezone": "Asia/Shanghai",
-  "status": "active",
+  "status": "paused",
   "ready_for_evaluation": false,
   "branch": "wip/ai-file-column-2026",
   "pushed": true,
@@ -21,6 +21,6 @@
     "ai_column": "Seven integration groups passed together on the final Windows binary, including DDL/readonly, transactions, stale requests, retry/strict with prepared statements, vector index/rollback, row identity and ALTER backfill, and mixed success/failure. Windows restart recovery also passed after interrupting an in-flight request and waiting for the persisted lease to expire."
   },
   "test_database_pid_46648": "stopped at pause; mysqladmin shutdown was unsupported, process was stopped after exact executable-path verification",
-  "next_step": "Run Linux SQL integration with increased test-session timeout; then update 2026-competition and provide branch and commit.",
-  "linux_build": "Linux release binary successfully built on GitHub Actions run 40640503833. Integration stopped when first model creation exceeded default 10-second query timeout; tests now use 120 seconds and a new run is needed."
+  "next_step": "Resume by rerunning Linux validation at development branch HEAD, fix any failures, fast-forward 2026-competition, then supply Branch and Commit ID.",
+  "linux_build": "Linux release build passed at 7e284a1; first integration run hit a 10-second model-creation timeout. Test-session timeout was increased, and follow-up run 40643692825 was canceled at user request before completion."
 }
