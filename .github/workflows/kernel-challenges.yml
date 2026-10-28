@@ -102,6 +102,7 @@ jobs:
           python3 unittest/sql/engine/expr/test_ai_enhancement_protocol.py 2>&1 | tee kernel-test-evidence/ai-functions.txt
           python3 unittest/sql/engine/basic/test_file_sql_integration.py 2>&1 | tee kernel-test-evidence/file-sql.txt
           python3 unittest/sql/engine/ai/test_ai_column_integration.py 2>&1 | tee kernel-test-evidence/ai-columns.txt
+          SEEKDB_FILE_ROOT="$task_files" python3 competition/kernel-challenges/run_mysqltest.py 2>&1 | tee kernel-test-evidence/mysqltest-summary.txt
       - name: Collect diagnostics
         if: always()
         shell: bash
