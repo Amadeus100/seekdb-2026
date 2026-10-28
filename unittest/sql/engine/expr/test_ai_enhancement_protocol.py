@@ -29,6 +29,8 @@ class AIProtocolTest(unittest.TestCase):
             port=int(os.getenv('SEEKDB_PORT', '2884')), user=os.getenv('SEEKDB_USER', 'root'),
             password=os.getenv('SEEKDB_PASSWORD', ''), database='test', autocommit=True,
             charset='utf8mb4', read_timeout=120)
+        with cls.db.cursor() as c:
+            c.execute('SET SESSION ob_query_timeout=120000000')
         cls.prefix = 'ai_protocol_' + uuid.uuid4().hex[:8]
         cls.models = []
 

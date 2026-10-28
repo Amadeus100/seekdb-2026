@@ -23,6 +23,7 @@ class FileSQLTest(unittest.TestCase):
             password=os.getenv('SEEKDB_PASSWORD', ''), database='test', autocommit=True,
             charset='utf8mb4', read_timeout=60)
         with cls.db.cursor() as c:
+            c.execute('SET SESSION ob_query_timeout=120000000')
             c.execute('SELECT @@secure_file_priv')
             root = c.fetchone()[0]
             if not root or root.upper() == 'NULL':

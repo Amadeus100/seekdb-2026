@@ -22,7 +22,8 @@ jobs:
           python3 -m pip install pymysql pyarrow
       - uses: ./.github/actions/setup-rust
       - name: Cache Linux build dependencies
-        uses: actions/cache@v4
+        id: deps-cache
+        uses: actions/cache/restore@v4
         with:
           path: deps/3rd
           key: kernel-linux-el9-${{ hashFiles('deps/init/oceanbase.el9.x86_64.deps') }}
@@ -31,11 +32,30 @@ jobs:
         run: |
           set -euo pipefail
           ./build.sh release --init 2>&1 | tee configure-kernel.log
+      - name: Save Linux build dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: deps/3rd
+          key: kernel-linux-el9-${{ hashFiles('deps/init/oceanbase.el9.x86_64.deps') }}
+      - name: Restore compiled seekdb
+        id: binary-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: build_release/src/observer/seekdb
+          key: kernel-seekdb-${{ hashFiles('src/**', 'cmake/**', 'deps/init/**', 'CMakeLists.txt', 'build.sh', 'rust/**') }}
       - name: Compile native seekdb
+        if: steps.binary-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
           make -C build_release -j4 seekdb 2>&1 | tee build-kernel.log
+      - name: Save compiled seekdb
+        if: steps.binary-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: build_release/src/observer/seekdb
+          key: kernel-seekdb-${{ hashFiles('src/**', 'cmake/**', 'deps/init/**', 'CMakeLists.txt', 'build.sh', 'rust/**') }}
       - name: Run native SQL integration assertions
         env:
           SEEKDB_PORT: '2884'

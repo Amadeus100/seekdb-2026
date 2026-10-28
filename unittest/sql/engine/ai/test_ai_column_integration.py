@@ -24,9 +24,12 @@ spec.loader.exec_module(mock)
 class AIColumnIntegration(unittest.TestCase):
     @classmethod
     def connect(cls):
-        return pymysql.connect(host="127.0.0.1", port=int(os.environ.get("SEEKDB_TEST_PORT", "2884")),
-                               user="root", password=os.environ.get("SEEKDB_TEST_PASSWORD", ""),
-                               charset="utf8mb4", autocommit=True)
+        connection = pymysql.connect(host="127.0.0.1", port=int(os.environ.get("SEEKDB_TEST_PORT", "2884")),
+                                     user="root", password=os.environ.get("SEEKDB_TEST_PASSWORD", ""),
+                                     charset="utf8mb4", autocommit=True, read_timeout=120)
+        with connection.cursor() as cursor:
+            cursor.execute("SET SESSION ob_query_timeout=120000000")
+        return connection
 
     @classmethod
     def setUpClass(cls):
