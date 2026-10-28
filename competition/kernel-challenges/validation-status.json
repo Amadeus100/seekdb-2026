@@ -22,5 +22,5 @@
   },
   "test_database_pid_46648": "stopped at pause; mysqladmin shutdown was unsupported, process was stopped after exact executable-path verification",
   "next_step": "Submit branch 2026-competition and its full commit ID to the competition evaluator; hidden tests and platform score are not yet known.",
-  "linux_build": "Linux release build and 19 integration groups passed in run 40643692825; run 40655122608 reused the binary for the identical tracked source trees and passed all 19 groups, including expanded file path security checks."
+  "linux_build": "Run 40687402928 rebuilt the fixed kernel and passed AI function 5, file SQL 8, AI column 7 integration groups and all six official mysqltest result comparisons. The file fixture setup used local copies in place of SSH/SCP; SQL and expected results were unchanged. Competition hidden tests and scores are not yet known."
 }

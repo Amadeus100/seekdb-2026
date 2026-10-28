@@ -1,0 +1,37 @@
+Linux validation of official mysqltest result comparisons
+Run: https://github.com/Amadeus100/seekdb-2026/actions/runs/40687402928
+Validated commit: 44b0e7a11d3fd15265b782def16dd554ffed2922
+File SQL fixture setup used local file copies instead of SSH/SCP; SQL and expected result were unchanged.
+
+2026-10-28T13:06:45.5272965Z test_completion_prompt_and_longtext (__main__.AIProtocolTest) ... ok
+2026-10-28T13:06:45.6274355Z test_embed_grouping_null_filter_and_limit (__main__.AIProtocolTest) ... ok
+2026-10-28T13:07:03.4971339Z test_embed_response_failures (__main__.AIProtocolTest) ... ok
+2026-10-28T13:07:03.5457075Z test_ollama_alter_and_native_protocol (__main__.AIProtocolTest) ... ok
+2026-10-28T13:07:03.5645815Z test_rerank_global_order_and_ids (__main__.AIProtocolTest) ... ok
+2026-10-28T13:07:04.0649789Z Ran 5 tests in 23.150s
+2026-10-28T13:07:04.0650103Z OK
+2026-10-28T13:07:04.1729233Z test_bounds_bad_data_and_switch (__main__.FileSQLTest) ... ok
+2026-10-28T13:07:04.1774345Z test_copy_roundtrip_and_no_overwrite (__main__.FileSQLTest) ... ok
+2026-10-28T13:07:04.2329675Z test_copy_table_and_runtime_failure_cleanup (__main__.FileSQLTest) ... ok
+2026-10-28T13:07:04.2361942Z test_csv_options_and_json_types (__main__.FileSQLTest) ... ok
+2026-10-28T13:07:04.2386416Z test_datetime_fractional_precision (__main__.FileSQLTest) ... ok
+2026-10-28T13:07:04.2493048Z test_native_filter_group_join_and_rescan (__main__.FileSQLTest) ... ok
+2026-10-28T13:07:04.5065478Z test_parquet_multi_group_nullable_projection (__main__.FileSQLTest) ... ok
+2026-10-28T13:07:04.5118561Z test_schema_and_full_inference_after_changes (__main__.FileSQLTest) ... ok
+2026-10-28T13:07:04.5130623Z Ran 8 tests in 0.351s
+2026-10-28T13:07:04.5132666Z OK
+2026-10-28T13:07:05.4540262Z test_01_ddl_and_assignment (__main__.AIColumnIntegration) ... ok
+2026-10-28T13:07:06.7608605Z test_02_transaction_group_and_dml (__main__.AIColumnIntegration) ... ok
+2026-10-28T13:07:10.4030119Z test_03_stale_requests_and_delete (__main__.AIColumnIntegration) ... ok
+2026-10-28T13:07:12.5314395Z test_04_retry_and_strict (__main__.AIColumnIntegration) ... ok
+2026-10-28T13:07:13.9563532Z test_05_vector_and_rollback (__main__.AIColumnIntegration) ... ok
+2026-10-28T13:07:15.9257553Z test_06_row_identity_and_definition_changes (__main__.AIColumnIntegration) ... ok
+2026-10-28T13:07:18.5373435Z test_07_group_final_failure (__main__.AIColumnIntegration) ... ok
+2026-10-28T13:07:18.5794550Z Ran 7 tests in 13.951s
+2026-10-28T13:07:18.5818880Z OK
+2026-10-28T13:07:18.6631571Z file_sql.file_sql_basic: exit=0
+2026-10-28T13:07:19.2102953Z ai_column.ai_column_ddl: exit=0
+2026-10-28T13:07:27.3240546Z ai_column.ai_column_t1_dml: exit=0
+2026-10-28T13:07:32.8839283Z ai_column.ai_column_worker: exit=0
+2026-10-28T13:07:36.9153818Z ai_column.ai_column_vector_index: exit=0
+2026-10-28T13:07:38.8119607Z ai_column.ai_column_retry_strict: exit=0
