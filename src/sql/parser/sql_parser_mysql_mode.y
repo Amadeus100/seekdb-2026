@@ -14691,6 +14691,7 @@ alter_with_opt_hint TABLE relation_factor RETRY AI COLUMN column_name ai_column_
 }
 | alter_with_opt_hint TABLE relation_factor RETRY AI COLUMN column_name ai_column_retry_where ',' alter_table_actions
 {
+  (void)($10);
   malloc_non_terminal_node($$, result->malloc_pool_, T_AI_COLUMN_RETRY, 4, $3, $7, $8, $1);
   $$->reserved_ = 1;
 }
@@ -14707,7 +14708,7 @@ alter_with_opt_hint TABLE relation_factor alter_table_actions
 
 ai_column_retry_where:
 /* EMPTY */ { $$ = NULL; }
-| WHERE opt_hint_value expr { $$ = $3; dup_expr_string($$, result, @3.first_column, @3.last_column); }
+| WHERE opt_hint_value expr { (void)($2); $$ = $3; dup_expr_string($$, result, @3.first_column, @3.last_column); }
 ;
 
 alter_table_actions:
