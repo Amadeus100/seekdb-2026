@@ -136,8 +136,29 @@ class FileSQLTest(unittest.TestCase):
                 self.query('SELECT * FROM ' + self.scan(name,kind))
         with self.assertRaises(pymysql.MySQLError):
             self.query("SELECT * FROM read_csv('https://example.com/data.csv')")
-        with self.assertRaises(pymysql.MySQLError):
-            self.query('SELECT * FROM read_csv(%s)', (str(self.root.parent / 'outside.csv'),))
+        with tempfile.TemporaryDirectory(prefix='seekdb-outside-', dir=self.root.parent) as outside:
+            outside_file = Path(outside) / 'outside.csv'
+            outside_file.write_text('value\n123\n', encoding='utf-8')
+            with self.assertRaises(pymysql.MySQLError):
+                self.query('SELECT * FROM read_csv(%s)', (str(outside_file),))
+            traversed = self.root / '..' / Path(outside).name / outside_file.name
+            with self.assertRaises(pymysql.MySQLError):
+                self.query('SELECT * FROM read_csv(%s)', (str(traversed),))
+            outside_export = Path(outside) / 'export.csv'
+            with self.assertRaises(pymysql.MySQLError):
+                self.query('COPY (SELECT 1 AS value) TO %s (FORMAT CSV)', (str(outside_export),))
+            self.assertFalse(outside_export.exists())
+            link = self.dir / 'outside-link.csv'
+            try:
+                link.symlink_to(outside_file)
+            except (OSError, NotImplementedError):
+                pass  # Creating symlinks may require privileges on Windows.
+            else:
+                try:
+                    with self.assertRaises(pymysql.MySQLError):
+                        self.query('SELECT * FROM read_csv(%s)', (str(link),))
+                finally:
+                    link.unlink()
         self.query('SET SESSION enable_file_sql=OFF')
         try:
             with self.assertRaises(pymysql.MySQLError):
