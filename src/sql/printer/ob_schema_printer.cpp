@@ -15,6 +15,7 @@
  */
 
 #define USING_LOG_PREFIX SHARE_SCHEMA
+#include "sql/engine/ai/ai_column.h"
 #include "sql/printer/ob_schema_printer.h"
 #include "share/ob_autoincrement_service.h"
 #include "sql/resolver/expr/ob_raw_expr_util.h"
@@ -206,6 +207,14 @@ int ObSchemaPrinter::print_table_definition_columns(const ObTableSchema &table_s
         }
         if (OB_SUCC(ret) && col->is_invisible_column()) {
           if (OB_FAIL(databuff_printf(buf, buf_len, pos, " INVISIBLE"))) {
+          }
+        }
+        if (OB_SUCC(ret) && col->has_column_flag(share::AI_COLUMN_SCHEMA_FLAG)) {
+          share::AIColumnDefinition definition;
+          if (!get_ai_column_definition(*col, definition)) { ret = OB_INVALID_DATA;
+          } else {
+            ret = databuff_printf(buf, buf_len, pos, " AI COLUMN (%s) WITH (sync_mode='async', max_retries=%lld)",
+                definition.expression.c_str(), static_cast<long long>(definition.max_retries));
           }
         }
         if (OB_SUCC(ret) && col->is_generated_column()) {

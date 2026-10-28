@@ -16,6 +16,7 @@
 
 #define USING_LOG_PREFIX SQL_RESV
 #include "config_bridge.h"
+#include "sql/engine/ai/ai_column.h"
 #include "ob_ddl_resolver.h"
 #include "data_plane/blocksstable/ob_index_block_util.h"
 #include "sql/resolver/dml/ob_dml_resolver.h"
@@ -2081,9 +2082,19 @@ int ObDDLResolver::resolve_normal_column_attribute(ObColumnSchemaV2 &column,
     if (OB_ISNULL(attrs_node)) {
       ret = OB_INVALID_ARGUMENT;
     }
-    for (int64_t i = 0; OB_SUCC(ret) && i < attrs_node->num_child_; ++i) {
+      bool seen_ai_column_attribute = false;
+      for (int64_t i = 0; OB_SUCC(ret) && i < attrs_node->num_child_; ++i) {
       ParseNode *attr_node = attrs_node->children_[i];
       switch (attr_node->type_) {
+      case T_AI_COLUMN_ATTRIBUTE: {
+          if (seen_ai_column_attribute) {
+          ret = OB_INVALID_ARGUMENT;
+        } else {
+            seen_ai_column_attribute = true;
+          ret = resolve_ai_column_attribute(*attr_node, column, *allocator_);
+        }
+        break;
+      }
       case T_CONSTR_NOT_NULL: {
         if (OB_FAIL(resolve_normal_column_attribute_constr_not_null(column, attr_node, resolve_stat))) {
         }

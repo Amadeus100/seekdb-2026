@@ -16,6 +16,7 @@
 
 #define USING_LOG_PREFIX SERVER
 
+#include "sql/engine/ai/ai_column.h"
 #include "config_bridge.h"
 #include "config_checkers.h"
 #ifndef _WIN32
@@ -1348,6 +1349,7 @@ int ObServer::start()
     set_stop();
   } else if (!stop_) {
     GCTX.status_ = SS_SERVING;
+    sql::start_ai_column_worker();
     GCTX.start_service_time_ = start_service_time;
     FLOG_INFO("[OBSERVER_NOTICE] observer start service", "start_service_time", GCTX.start_service_time_);
     LOG_DBA_INFO_V2(OB_SERVER_START_SUCCESS,
@@ -1553,6 +1555,7 @@ int ObServer::stop()
   int fail_ret = OB_SUCCESS;
   FLOG_INFO("[OBSERVER_NOTICE] stop observer begin");
   LOG_DBA_INFO_V2(OB_SERVER_STOP_BEGIN, "observer stop begin.");
+  sql::stop_ai_column_worker();
 
   if (in_process_) {
     // DDL retries must observe cancellation while schema and SQL services are still available.

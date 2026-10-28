@@ -16,6 +16,8 @@
 
 #define USING_LOG_PREFIX SHARE_SCHEMA
 #include "ob_table_sql_service.h"
+#include "share/ai_service/ai_column_definition.h"
+#include "share/ai_service/ai_column_schema_service.h"
 #include "lib/literals/ob_literals.h"
 #include "share/ob_global_stat_proxy.h"
 #include "share/schema/ob_constraint.h"
@@ -810,6 +812,11 @@ int ObTableSqlService::drop_table(const ObTableSchema &table_schema,
       }
     }
   }
+  bool has_ai_column = false;
+  for (auto it = table_schema.column_begin(); it != table_schema.column_end(); ++it) {
+    has_ai_column = has_ai_column || (*it)->has_column_flag(AI_COLUMN_SCHEMA_FLAG);
+  }
+  if (OB_SUCC(ret) && has_ai_column) { ret = delete_ai_column_metadata(sql_client, table_id); }
   return ret;
 }
 
@@ -909,6 +916,7 @@ int ObTableSqlService::insert_single_column(
     if (OB_FAIL(log_operation_wrapper(opt, sql_client))) {
     }
   }
+  if (OB_SUCC(ret)) { ret = persist_ai_column_metadata(sql_client, new_table_schema, new_column_schema); }
   return ret;
 }
 
@@ -990,6 +998,16 @@ int ObTableSqlService::update_single_column(
     }
   }
 
+  if (OB_SUCC(ret)) {
+    if (new_column_schema.has_column_flag(AI_COLUMN_SCHEMA_FLAG)) {
+      ret = persist_ai_column_metadata(sql_client, new_table_schema, new_column_schema);
+    } else {
+      const ObColumnSchemaV2 *old = origin_table_schema.get_column_schema(new_column_schema.get_column_id());
+      if (old && old->has_column_flag(AI_COLUMN_SCHEMA_FLAG)) {
+        ret = delete_ai_column_metadata(sql_client, new_table_schema.get_table_id(), new_column_schema.get_column_id());
+      }
+    }
+  }
   return ret;
 }
 
@@ -1144,6 +1162,9 @@ int ObTableSqlService::batch_add_columns_for_create_table(common::ObISQLClient &
     } else if (FALSE_IT(time_guard.click("insert_all_column_history"))) {
     }
   }
+  for (int64_t i = 0; OB_SUCC(ret) && i < tables.count(); ++i) {
+    ret = persist_ai_column_metadata(sql_client, tables.at(i));
+  }
   return ret;
 }
 
@@ -1165,6 +1186,7 @@ int ObTableSqlService::add_columns_for_not_core(ObISQLClient &sql_client,
   } else if (OB_FAIL(dml.set_default_columns("is_deleted", "0"))) {
   } else if (OB_FAIL(exec_dml(sql_client, OB_ALL_COLUMN_HISTORY_TNAME, dml, column_count))) {
   }
+  if (OB_SUCC(ret)) { ret = persist_ai_column_metadata(sql_client, table); }
   return ret;
 }
 
@@ -2044,6 +2066,9 @@ int ObTableSqlService::delete_single_column(
     }
   }
 
+  if (OB_SUCC(ret) && orig_column_schema.has_column_flag(AI_COLUMN_SCHEMA_FLAG)) {
+    ret = delete_ai_column_metadata(sql_client, table_id, column_id);
+  }
   return ret;
 }
 
@@ -3170,7 +3195,8 @@ int ObTableSqlService::gen_column_dml_without_check(
       cur_default_value.reset();
     }
     ObString bin_extended_type_info;
-    if (OB_SUCC(ret) && (column.is_enum_or_set() || column.is_collection())) {
+    if (OB_SUCC(ret) && (column.is_enum_or_set() || column.is_collection()
+        || column.has_column_flag(AI_COLUMN_SCHEMA_FLAG))) {
       int64_t pos = 0;
       extended_type_info_buf = static_cast<char *>(allocator.alloc(OB_MAX_VARBINARY_LENGTH));
       if (OB_ISNULL(extended_type_info_buf)) {

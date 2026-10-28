@@ -15,6 +15,7 @@
  */
 
 #define USING_LOG_PREFIX SQL_RESV
+#include "sql/engine/ai/ai_column.h"
 #include "sql/engine/basic/file_scan_utils.h"
 #include "config_bridge.h"
 #include "ob_dml_resolver.h"
@@ -1793,6 +1794,24 @@ int ObDMLResolver::resolve_column_ref_for_subquery(const ObQualifiedName &q_name
 
 //resolve column ref expr that column in single basic or alias table
 // TODO bin.lb:  remove resolve_generated_table_column_item
+int ObDMLResolver::check_ai_column_read(const TableItem &table_item, uint64_t column_id)
+{
+  int ret = OB_SUCCESS;
+  if (!table_item.is_basic_table() || !session_info_->is_user_session() || is_ai_column_internal_access()) {
+    return ret;
+  }
+  const ObTableSchema *table = nullptr;
+  OZ(schema_checker_->get_table_schema(table_item.ref_id_, table));
+  const ObColumnSchemaV2 *column = table == nullptr ? nullptr : table->get_column_schema(column_id);
+  if (OB_SUCC(ret) && column != nullptr && column->has_column_flag(share::AI_COLUMN_SCHEMA_FLAG)) {
+    // A state transition can occur without a schema change. A cached plan must
+    // never omit the column-level readiness check on a subsequent execution.
+    params_.query_ctx_->get_query_hint_for_update().get_global_hint().merge_plan_cache_hint(OB_USE_PLAN_CACHE_NONE);
+    ret = check_ai_column_strict_read(*session_info_, *table, *column);
+  }
+  return ret;
+}
+
 int ObDMLResolver::resolve_basic_column_ref(const ObQualifiedName &q_name, ObRawExpr *&real_ref_expr)
 {
   int ret = OB_SUCCESS;
@@ -1821,6 +1840,7 @@ int ObDMLResolver::resolve_basic_column_ref(const ObQualifiedName &q_name, ObRaw
       }
       if (OB_SUCC(ret)) {
         real_ref_expr = column_item->expr_;
+        OZ(check_ai_column_read(*table_item, column_item->column_id_));
       }
     }
   }
@@ -3078,7 +3098,7 @@ int ObDMLResolver::resolve_single_table_column_item(const TableItem &table_item,
     ret = OB_ERR_UNEXPECTED;
   } else if (table_item.is_basic_table() || table_item.is_fake_cte_table()) {
     if (OB_FAIL(resolve_basic_column_item(table_item, column_name, include_hidden, col_item))) {
-    } else { /*do nothing*/ }
+    } else { OZ(check_ai_column_read(table_item, col_item->column_id_)); }
   } else if (table_item.is_generated_table() || table_item.is_temp_table() || table_item.is_lateral_table()) {
     if (OB_FAIL(resolve_generated_table_column_item(table_item, column_name, col_item))) {
     }

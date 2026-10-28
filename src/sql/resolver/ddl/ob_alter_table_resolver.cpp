@@ -16,6 +16,7 @@
 
 #define USING_LOG_PREFIX SQL_RESV
 #include "config_bridge.h"
+#include "sql/engine/ai/ai_column.h"
 #include "sql/resolver/ddl/ob_alter_table_resolver.h"
 #include "sql/resolver/expr/ob_raw_expr_part_expr_checker.h"
 #include "sql/resolver/dml/ob_delete_resolver.h"
@@ -237,6 +238,9 @@ int ObAlterTableResolver::resolve(const ParseNode &parse_tree)
     }
   }
   DEBUG_SYNC(HANG_BEFORE_RESOLVER_FINISH);
+  if (OB_SUCC(ret) && table_schema_ != nullptr) {
+    ret = finalize_ai_column_schema(get_alter_table_stmt()->get_alter_table_schema(), *allocator_, table_schema_);
+  }
   return ret;
 }
 

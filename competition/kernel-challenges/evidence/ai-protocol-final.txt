@@ -1,0 +1,10 @@
+test_completion_prompt_and_longtext (__main__.AIProtocolTest.test_completion_prompt_and_longtext) ... ok
+test_embed_grouping_null_filter_and_limit (__main__.AIProtocolTest.test_embed_grouping_null_filter_and_limit) ... ok
+test_embed_response_failures (__main__.AIProtocolTest.test_embed_response_failures) ... ok
+test_ollama_alter_and_native_protocol (__main__.AIProtocolTest.test_ollama_alter_and_native_protocol) ... ok
+test_rerank_global_order_and_ids (__main__.AIProtocolTest.test_rerank_global_order_and_ids) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 17.687s
+
+OK

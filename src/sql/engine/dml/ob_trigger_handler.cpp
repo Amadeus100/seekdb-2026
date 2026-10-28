@@ -707,7 +707,12 @@ int TriggerHandle::do_handle_after_row(
 {
   int ret = OB_SUCCESS;
   if (trig_ctdef.all_tm_points_.has_after_row()) {
-    if (OB_FAIL(do_handle_rowid_after_row(dml_op, trig_ctdef, trig_rtdef, tg_event))) {
+    // Heap row identifiers are assigned after BEFORE INSERT has run. Refresh
+    // the row record from native DML expressions before AFTER INSERT consumes
+    // the identifier (including transactional AI task creation).
+    if (ObTriggerEvents::is_insert_event(tg_event)
+        && OB_FAIL(init_param_new_row(dml_op.get_eval_ctx(), trig_ctdef, trig_rtdef))) {
+    } else if (OB_FAIL(do_handle_rowid_after_row(dml_op, trig_ctdef, trig_rtdef, tg_event))) {
     } else {
       bool need_fire = false;
       for (int64_t i = 0; OB_SUCC(ret) && i < trig_ctdef.tg_args_.count(); i++) {

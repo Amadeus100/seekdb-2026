@@ -15,6 +15,7 @@
  */
 
 #define USING_LOG_PREFIX COMMON
+#include "share/ai_service/ai_column_definition.h"
 #include "sql/resolver/ddl/ob_vec_index_builder_util.h"
 #include "sql/resolver/ddl/ob_index_builder_util.h"
 #include "sql/resolver/expr/ob_raw_expr_util.h"
@@ -2810,7 +2811,9 @@ int ObVecIndexBuilderUtil::generate_vec_ivf_column(
         } else if (OB_FAIL(column_schema.add_cascaded_column_id(tmp_col_schema->get_column_id()))) {
         } else if (OB_FAIL(databuff_printf(vec_expr_def, OB_MAX_DEFAULT_VALUE_LENGTH, def_pos, "`%s`, ", tmp_col_schema->get_column_name()))) {
         } else if (ObCollectionSQLType == obj_type) {
-          if (tmp_col_schema->get_extended_type_info().count() != 1) {
+          if (tmp_col_schema->get_extended_type_info().count() != 1
+              && !(tmp_col_schema->has_column_flag(share::AI_COLUMN_SCHEMA_FLAG)
+                && share::is_ai_vector_type_info(tmp_col_schema->get_extended_type_info()))) {
             ret = OB_INVALID_ARGUMENT;
           } else if (col_type == IVF_PQ_CENTER_IDS_COL) {
             // pq center ids col type is ARRAY(VARBINARY)

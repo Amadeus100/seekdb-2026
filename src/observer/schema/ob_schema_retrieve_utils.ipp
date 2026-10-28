@@ -15,6 +15,7 @@
  */
 
 #include "lib/worker.h"
+#include "share/ai_service/ai_column_definition.h"
 #include "share/schema/ob_schema_mgr.h"
 
 
@@ -1045,7 +1046,8 @@ int ObSchemaRetrieveUtils::fill_column_schema(const bool check_deleted, T &resul
       ret = fill_column_schema_default_value<T>(result, column, default_type);
     }
 
-    if (OB_SUCC(ret) && (column.is_enum_or_set() || column.is_collection())) {
+    if (OB_SUCC(ret) && (column.is_enum_or_set() || column.is_collection()
+        || column.has_column_flag(AI_COLUMN_SCHEMA_FLAG))) {
       ObString extend_type_info;
       EXTRACT_VARCHAR_FIELD_MYSQL(result, "extended_type_info", extend_type_info);
       int64_t pos = 0;

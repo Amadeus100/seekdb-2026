@@ -335,7 +335,8 @@ bool ObSqlParameterization::is_tree_not_param(const ParseNode *tree)
     ret_bool = true;
   } else if (T_EXTERNAL_FILE_FORMAT == tree->type_) {
     ret_bool = true;
-  } else if (T_FILE_SQL_TABLE == tree->type_ || T_FILE_SQL_COPY == tree->type_) {
+  } else if (T_FILE_SQL_TABLE == tree->type_ || T_FILE_SQL_COPY == tree->type_
+      || T_AI_COLUMN_RETRY == tree->type_ || T_SHOW_AI_COLUMNS == tree->type_) {
     // A file path and its format options determine the output column schema.
     // Keep their literals available to the resolver and in the plan cache key.
     ret_bool = true;

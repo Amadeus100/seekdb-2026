@@ -1,4 +1,5 @@
 #include "sql/engine/basic/file_scan_utils.h"
+#include "share/ai_service/ai_column_definition.h"
 /*
  * Copyright (c) 2025 OceanBase.
  *
@@ -1696,6 +1697,8 @@ stmt::StmtType ObResolverUtils::get_stmt_type_by_item_type(const ObItemType item
   } break;
       // dml
       case T_FILE_SQL_COPY: type = stmt::T_SELECT; break;
+      case T_SHOW_AI_COLUMNS: type = stmt::T_SELECT; break;
+      case T_AI_COLUMN_RETRY: type = stmt::T_UPDATE; break;
       SET_STMT_TYPE(T_SELECT);
       SET_STMT_TYPE(T_INSERT);
       SET_STMT_TYPE(T_DELETE);
@@ -3559,7 +3562,7 @@ int ObResolverUtils::generate_subschema_id(ObSQLSessionInfo &session_info,
   int ret = OB_SUCCESS;
   if (OB_ISNULL(session_info.get_cur_exec_ctx())) {
     ret = OB_ERR_UNEXPECTED;
-  } else if (extended_type_info.count() != 1) {
+  } else if (extended_type_info.count() != 1 && !share::is_ai_vector_type_info(extended_type_info)) {
     ret = OB_ERR_UNEXPECTED;
   } else if (OB_FAIL(session_info.get_cur_exec_ctx()->get_subschema_id_by_type_string(extended_type_info.at(0), subschema_id))) {
   }

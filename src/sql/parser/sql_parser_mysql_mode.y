@@ -498,6 +498,8 @@ END_P SET_VAR DELIMITER
 %type <node> skip_index_type opt_skip_index_type_list
 %type <node> vec_index_params vec_index_param vec_index_param_value opt_with_vector_index_parameters
 %token <non_reserved_keyword> READ_CSV READ_JSON READ_NDJSON READ_PARQUET GLOB
+%token <non_reserved_keyword> RETRY
+%type <node> ai_column_options ai_column_option_list ai_column_retry_where
 %type <node> file_sql_table file_sql_kind file_sql_options file_sql_option
 %type <node> file_sql_copy file_sql_copy_options file_sql_copy_list file_sql_copy_option
 %type <node> json_table_expr unnest_expr mock_jt_on_error_on_empty jt_column_list json_table_column_def
@@ -6143,6 +6145,12 @@ column_attribute_list column_attribute
 }
 
 column_attribute:
+AI COLUMN '(' expr ')' ai_column_options
+{
+  dup_expr_string($4, result, @4.first_column, @4.last_column);
+  malloc_non_terminal_node($$, result->malloc_pool_, T_AI_COLUMN_ATTRIBUTE, 2, $4, $6);
+}
+|
 not NULLX
 {
   (void)($1) ;
@@ -6243,6 +6251,17 @@ not NULLX
 {
   malloc_terminal_node($$, result->malloc_pool_, T_INVISIBLE);
 }
+;
+
+ai_column_options:
+/* EMPTY */ { $$ = NULL; }
+| WITH '(' ai_column_option_list ')' { merge_nodes($$, result, T_EXPR_LIST, $3); }
+;
+
+ai_column_option_list:
+file_sql_option { $$ = $1; }
+| ai_column_option_list ',' file_sql_option
+  { malloc_non_terminal_node($$, result->malloc_pool_, T_LINK_NODE, 2, $1, $3); }
 ;
 
 opt_column_default_value_list:
@@ -12633,6 +12652,11 @@ CLASS_ORIGIN
  *
  *****************************************************************************/
 show_stmt:
+SHOW AI COLUMNS FROM relation_factor
+{
+  malloc_non_terminal_node($$, result->malloc_pool_, T_SHOW_AI_COLUMNS, 1, $5);
+}
+|
 SHOW opt_extended_or_full TABLES opt_from_or_in_database_clause opt_show_condition
 {
   ParseNode *value = NULL;
@@ -14661,6 +14685,16 @@ relation_factor TO relation_factor
  *
  *****************************************************************************/
 alter_table_stmt:
+alter_with_opt_hint TABLE relation_factor RETRY AI COLUMN column_name ai_column_retry_where
+{
+  malloc_non_terminal_node($$, result->malloc_pool_, T_AI_COLUMN_RETRY, 4, $3, $7, $8, $1);
+}
+| alter_with_opt_hint TABLE relation_factor RETRY AI COLUMN column_name ai_column_retry_where ',' alter_table_actions
+{
+  malloc_non_terminal_node($$, result->malloc_pool_, T_AI_COLUMN_RETRY, 4, $3, $7, $8, $1);
+  $$->reserved_ = 1;
+}
+|
 alter_with_opt_hint TABLE relation_factor alter_table_actions
 {
   ParseNode *table_actions = NULL;
@@ -14670,6 +14704,11 @@ alter_with_opt_hint TABLE relation_factor alter_table_actions
 }
 ;
 
+
+ai_column_retry_where:
+/* EMPTY */ { $$ = NULL; }
+| WHERE opt_hint_value expr { $$ = $3; dup_expr_string($$, result, @3.first_column, @3.last_column); }
+;
 
 alter_table_actions:
 alter_table_action_list
@@ -17567,6 +17606,8 @@ unreserved_keyword_normal { $$=$1;}
 ;
 
 unreserved_keyword_normal:
+RETRY
+|
 ACCOUNT
 |       ACTION
 |       ACTIVE

@@ -1,12 +1,12 @@
 {
-  "checkpoint_date": "2026-10-27",
+  "checkpoint_date": "2026-10-28",
   "timezone": "Asia/Shanghai",
   "status": "active",
   "ready_for_evaluation": false,
   "branch": "wip/ai-file-column-2026",
   "pushed": false,
   "base_merge_commit": "77f2d746a2df0cca445d7d5f5c77457b8b898c43",
-  "windows_seekdb_build": "passed; AI COLUMN drafts are excluded from the source inventory",
+  "windows_seekdb_build": "passed with AI COLUMN DDL, metadata, transactional triggers, worker, retry and strict-read sources included; further fixes are being rebuilt",
   "file_scanner_checks": {
     "passed_count": 693,
     "latest_changes_retested": true,
@@ -18,8 +18,8 @@
     "ai_functions_full_mock_suite": "52 official main statements and 101 existing AI_PROMPT statements: no execution errors; 5 protocol integration test groups passed",
     "file_tables": "official main: 15 statements, no errors; 7 integration test groups with result assertions passed, including native batch scanning, JOIN, COPY table/query and cleanup",
     "latest_diagnostic_binary_deployed": true,
-    "ai_column": "draft; not yet built or integrated"
+    "ai_column": "Seven integration groups passed together on the final Windows binary, including DDL/readonly, transactions, stale requests, retry/strict with prepared statements, vector index/rollback, row identity and ALTER backfill, and mixed success/failure."
   },
   "test_database_pid_46648": "stopped at pause; mysqladmin shutdown was unsupported, process was stopped after exact executable-path verification",
-  "next_step": "Implement native AI COLUMN DDL metadata, transactional task creation, worker, retries and strict reads; then run Linux validation. Do not report all three tasks complete."
+  "next_step": "Run Linux workflow and recovery checks, then update the submission branch."
 }

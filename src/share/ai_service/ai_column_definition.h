@@ -13,6 +13,19 @@ namespace oceanbase { namespace share {
 constexpr int64_t AI_COLUMN_SCHEMA_FLAG = INT64_C(1) << 4;
 constexpr const char *AI_COLUMN_DEFINITION_PREFIX = "seekdb-ai-column-v1:";
 
+template <typename Table, typename Column>
+bool is_ai_column_trigger_field(const Table &table, const Column &column)
+{
+  if (!column.is_hidden()) { return false; }
+  if (column.get_column_name_str().prefix_match("__ai_")) { return true; }
+  if (column.is_rowkey_column()) {
+    for (auto it = table.column_begin(); it != table.column_end(); ++it) {
+      if ((*it)->has_column_flag(AI_COLUMN_SCHEMA_FLAG)) { return true; }
+    }
+  }
+  return false;
+}
+
 // Stored as the final extended-type-info entry. Collection type information
 // remains in entry zero; the existing schema copy and wire formats own strings.
 struct AIColumnDefinition {
@@ -32,7 +45,8 @@ struct AIColumnDefinition {
   uint64_t request_column = 0;
   uint64_t spec_column = 0;
   uint64_t version() const {
-    const std::string data = expression + system_prompt + std::to_string(dimension) + std::to_string(max_retries);
+    const std::string data = expression + system_prompt + ":" + std::to_string(dimension)
+        + ":" + std::to_string(max_retries) + ":" + std::to_string(result_type) + ":" + std::to_string(result_length);
     uint64_t hash = 1469598103934665603ULL;
     for (unsigned char c : data) { hash = (hash ^ c) * 1099511628211ULL; }
     return hash & INT64_MAX;
@@ -91,4 +105,13 @@ struct AIColumnDefinition {
         && !definition.model.empty() && !definition.input.empty();
   }
 };
+template <typename TypeInfo>
+bool is_ai_vector_type_info(const TypeInfo &info)
+{
+  if (info.count() != 2) { return false; }
+  const auto &encoded = info.at(1);
+  AIColumnDefinition definition;
+  return AIColumnDefinition::decode(std::string(encoded.ptr(), encoded.length()), definition)
+      && definition.embedding && definition.dimension > 0;
+}
 }} // namespace oceanbase::share

@@ -16,6 +16,7 @@
 
 #define USING_LOG_PREFIX SHARE_SCHEMA
 #include "ob_column_schema.h"
+#include "share/ai_service/ai_column_definition.h"
 #include "share/schema/ob_schema_service.h"
 
 namespace oceanbase
@@ -644,8 +645,12 @@ int ObColumnSchemaV2::set_geo_type(const int32_t type_val)
 int ObColumnSchemaV2::is_same_collection_column(const ObColumnSchemaV2 &other, bool &is_same) const
 {
   int ret = OB_SUCCESS;
-  if (get_extended_type_info().count() == other.get_extended_type_info().count()) {
-    if (get_extended_type_info().count() != 1) {
+  is_same = false;
+  if (get_extended_type_info().count() > 0 && other.get_extended_type_info().count() > 0) {
+    if ((get_extended_type_info().count() != 1
+          && !is_ai_vector_type_info(get_extended_type_info()))
+        || (other.get_extended_type_info().count() != 1
+          && !is_ai_vector_type_info(other.get_extended_type_info()))) {
       ret = OB_ERR_UNEXPECTED;
     } else {
       ObString src_sub_name = get_extended_type_info().at(0);

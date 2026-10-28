@@ -15,6 +15,7 @@
  */
 
 #define USING_LOG_PREFIX SQL_RESV
+#include "sql/engine/ai/ai_column.h"
 #include "sql/resolver/ob_resolver.h"
 #include "lib/utility/ob_smart_call.h"
 #include "lib/stat/ob_diagnostic_info_guard.h"
@@ -232,6 +233,11 @@ int ObResolver::resolve(IsPrepared if_prepared, const ParseNode &parse_tree, ObS
       }
       case T_MERGE_TABLE: {
         REGISTER_STMT_RESOLVER(MergeTable);
+        break;
+      }
+      case T_SHOW_AI_COLUMNS:
+      case T_AI_COLUMN_RETRY: {
+        ret = resolve_ai_column_command(params_, *real_parse_tree, stmt);
         break;
       }
       case T_FILE_SQL_COPY:

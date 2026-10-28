@@ -8,13 +8,17 @@ import socket
 import subprocess
 import sys
 import threading
+import tempfile
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
+from urllib.request import urlopen
+
+_SERVERS = {}
 
 
 def state_dir(port):
-    return "/tmp/seekdb_ai_column_mock_%d" % port
+    return os.path.join(tempfile.gettempdir(), "seekdb_ai_column_mock_%d" % port)
 
 
 def state_path(port, name):
@@ -35,19 +39,27 @@ def read_events(port):
 
 def stop_server(port):
     pid_path = state_path(port, "server.pid")
+    owned = _SERVERS.pop(port, None)
+    if owned is not None:
+        if owned.poll() is None:
+            owned.terminate()
+        owned.wait(timeout=5)
+        if os.path.exists(pid_path):
+            os.unlink(pid_path)
+        return
     if not os.path.exists(pid_path):
         return
     try:
         with open(pid_path, "r", encoding="ascii") as stream:
             pid = int(stream.read().strip())
-        os.kill(pid, signal.SIGTERM)
-        for _ in range(50):
-            try:
-                os.kill(pid, 0)
-            except ProcessLookupError:
-                break
-            time.sleep(0.02)
-    except (ValueError, ProcessLookupError):
+        # Verify a live fixture rather than signalling an arbitrary PID that
+        # may have been recycled since a previous test invocation.
+        with urlopen("http://127.0.0.1:%d/__seekdb_mock_health" % port, timeout=1) as response:
+            health = json.load(response)
+        if health == {"fixture": "seekdb-ai-column", "pid": pid}:
+            with urlopen("http://127.0.0.1:%d/__seekdb_mock_stop" % port, timeout=1) as response:
+                response.read()
+    except (ValueError, OSError):
         pass
     try:
         os.unlink(pid_path)
@@ -61,14 +73,16 @@ def start_server(port):
     for name in ("events.jsonl", "server.out"):
         with open(state_path(port, name), "w", encoding="utf-8"):
             pass
-    output = open(state_path(port, "server.out"), "a", encoding="utf-8")
-    process = subprocess.Popen(
-        [sys.executable, os.path.abspath(__file__), "serve", str(port)],
-        stdin=subprocess.DEVNULL,
-        stdout=output,
-        stderr=subprocess.STDOUT,
-        start_new_session=True,
-    )
+    with open(state_path(port, "server.out"), "a", encoding="utf-8") as output:
+        process = subprocess.Popen(
+            [sys.executable, os.path.abspath(__file__), "serve", str(port)],
+            stdin=subprocess.DEVNULL,
+            stdout=output,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+        )
+    _SERVERS[port] = process
     with open(state_path(port, "server.pid"), "w", encoding="ascii") as stream:
         stream.write(str(process.pid))
     for _ in range(100):
@@ -92,6 +106,19 @@ def serve(port):
 
         def log_message(self, fmt, *args):
             return
+
+        def do_GET(self):
+            if self.path not in ("/__seekdb_mock_health", "/__seekdb_mock_stop"):
+                self.send_error(404)
+                return
+            payload = json.dumps({"fixture": "seekdb-ai-column", "pid": os.getpid()}).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+            if self.path == "/__seekdb_mock_stop":
+                threading.Thread(target=self.server.shutdown, daemon=True).start()
 
         def do_POST(self):
             size = int(self.headers.get("Content-Length", "0"))

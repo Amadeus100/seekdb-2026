@@ -15,6 +15,7 @@
  */
 
 #define USING_LOG_PREFIX SQL_RESV
+#include "share/ai_service/ai_column_definition.h"
 
 #include "ob_raw_expr_util.h"
 #include "lib/json/ob_json_print_utils.h"
@@ -4872,8 +4873,11 @@ int ObRawExprUtils::init_column_expr_subschema(const share::schema::ObColumnSche
     }
   } else if (column_schema.is_collection()) {
     uint16_t subschema_id = 0;
-    if (OB_UNLIKELY(column_schema.get_extended_type_info().count() != 1)) {
+    if (OB_UNLIKELY(column_schema.get_extended_type_info().count() != 1
+          && !share::is_ai_vector_type_info(column_schema.get_extended_type_info()))) {
       ret = OB_ERR_UNEXPECTED;
+        LOG_WARN("invalid collection column type metadata", K(ret), K(column_schema.get_column_name_str()),
+            K(column_schema.get_extended_type_info().count()));
     } else if (OB_FAIL(exec_ctx->get_subschema_id_by_type_string(
                                   column_schema.get_extended_type_info().at(0), subschema_id))) {
     } else {

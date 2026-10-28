@@ -15,6 +15,7 @@
  */
 
 #define USING_LOG_PREFIX SQL_ENG
+#include "sql/engine/ai/ai_column.h"
 #include "config_bridge.h"
 #include "common/ob_timeout_ctx.h"
 #include "lib/stat/ob_diagnostic_info_guard.h"
@@ -492,6 +493,9 @@ int ObCreateTableExecutor::execute(ObExecContext &ctx, ObCreateTableStmt &stmt)
       if (OB_FAIL(execute_ctas(ctx, stmt))){
       }
     }
+    if (OB_SUCC(ret) && select_stmt == nullptr && res.table_id_ != OB_INVALID_ID && !res.do_nothing_) {
+      OZ(install_ai_column_triggers(ctx, res.table_id_));
+    }
     SERVER_EVENT_ADD("ddl", "create table execute finish",
       "ret", ret,
       "trace_id", *ObCurTraceId::get_trace_id(),
@@ -866,6 +870,9 @@ int ObAlterTableExecutor::execute(ObExecContext &ctx, ObAlterTableStmt &stmt)
             *ctx.get_query_runtime_environment(), ctx.local_command_service(), is_support_cancel))) {
         }
       }
+    }
+    if (OB_SUCC(ret)) {
+      OZ(install_ai_column_triggers(ctx, alter_table_arg.alter_table_schema_.get_table_id(), true));
     }
     char table_info_buffer[256];
     snprintf(table_info_buffer, sizeof(table_info_buffer), "table_id:%ld, hidden_table_id:%ld", 

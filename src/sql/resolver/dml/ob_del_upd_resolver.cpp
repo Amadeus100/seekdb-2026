@@ -15,6 +15,7 @@
  */
 
 #define USING_LOG_PREFIX SQL_RESV
+#include "sql/engine/ai/ai_column.h"
 #include "ob_del_upd_resolver.h"
 #include "sql/resolver/dml/ob_default_value_utils.h"
 #include "sql/resolver/dml/ob_update_stmt.h"
@@ -121,6 +122,15 @@ int ObDelUpdResolver::resolve_assignments(const ParseNode &parse_node,
       }
       if (OB_SUCC(ret) && T_INSERT_SCOPE == scope) {
         if (OB_FAIL(mock_values_column_ref(ref_expr))) {
+        }
+      }
+      if (OB_SUCC(ret) && session_info_->is_user_session() && !is_ai_column_internal_access()) {
+        const ObTableSchema *target_schema = nullptr;
+        const TableItem &base = table->get_base_table_item();
+        OZ(schema_checker_->get_table_schema(base.ref_id_, target_schema));
+        if (OB_SUCC(ret) && target_schema != nullptr) {
+          const uint64_t cid = column->base_cid_ == OB_INVALID_ID ? ref_expr->get_column_id() : column->base_cid_;
+          OZ(check_ai_column_assignment(*session_info_, *target_schema, cid));
         }
       }
       // process expression
@@ -518,6 +528,20 @@ int ObDelUpdResolver::resolve_additional_assignments(ObIArray<ObTableAssignment>
                                                                  assigns.at(i).assignments_,
                                                                  update_with_vector_index))) {
     } else {
+      // A BEFORE trigger can invalidate an AI vector even when the user's
+      // assignment names only its source column. Include the vector index's
+      // generated identifier in the native update plan in that case.
+      if (trigger_exist && !update_with_vector_index) {
+        for (auto col = table_schema->column_begin(); OB_SUCC(ret) && col != table_schema->column_end(); ++col) {
+          share::AIColumnDefinition definition;
+          if (get_ai_column_definition(**col, definition) && definition.embedding) {
+            share::schema::ObIndexType index_type = share::schema::INDEX_TYPE_MAX;
+            OZ(ObVectorIndexUtil::check_column_has_vector_index(*table_schema, *schema_guard,
+                (*col)->get_column_id(), update_with_vector_index, index_type));
+            if (update_with_vector_index) { break; }
+          }
+        }
+      }
       for (ObTableSchema::const_column_iterator iter = table_schema->column_begin();
           (OB_SUCCESS == ret && iter != table_schema->column_end()); ++iter) {
         ColumnItem *col_item = NULL;
@@ -2222,6 +2246,14 @@ int ObDelUpdResolver::resolve_insert_columns(const ParseNode *node,
           }
         }
       }
+    }
+  }
+  if (OB_SUCC(ret) && table_item->is_basic_table()
+      && session_info_->is_user_session() && !is_ai_column_internal_access()) {
+    const ObTableSchema *schema = nullptr;
+    OZ(schema_checker_->get_table_schema(table_item->ref_id_, schema));
+    for (int64_t i = 0; OB_SUCC(ret) && i < table_info.values_desc_.count(); ++i) {
+      OZ(check_ai_column_assignment(*session_info_, *schema, table_info.values_desc_.at(i)->get_column_id()));
     }
   }
   return ret;

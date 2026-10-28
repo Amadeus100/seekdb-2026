@@ -1,0 +1,12 @@
+test_01_ddl_and_assignment (__main__.AIColumnIntegration.test_01_ddl_and_assignment) ... ok
+test_02_transaction_group_and_dml (__main__.AIColumnIntegration.test_02_transaction_group_and_dml) ... ok
+test_03_stale_requests_and_delete (__main__.AIColumnIntegration.test_03_stale_requests_and_delete) ... ok
+test_04_retry_and_strict (__main__.AIColumnIntegration.test_04_retry_and_strict) ... ok
+test_05_vector_and_rollback (__main__.AIColumnIntegration.test_05_vector_and_rollback) ... ok
+test_06_row_identity_and_definition_changes (__main__.AIColumnIntegration.test_06_row_identity_and_definition_changes) ... ok
+test_07_group_final_failure (__main__.AIColumnIntegration.test_07_group_final_failure) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 33.965s
+
+OK

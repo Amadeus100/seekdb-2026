@@ -1,3 +1,4 @@
+#include "sql/engine/ai/ai_column.h"
 #include "sql/engine/basic/file_scan_utils.h"
 /*
  * Copyright (c) 2025 OceanBase.
@@ -1741,6 +1742,9 @@ int ObSelectResolver::expand_target_list(
   ObArray<ColumnItem> column_items;
   if (table_item.is_basic_table()) {
     if (OB_FAIL(resolve_all_basic_table_columns(table_item, false, &column_items))) {
+    }
+    for (int64_t i = 0; OB_SUCC(ret) && i < column_items.count(); ++i) {
+      OZ(check_ai_column_read(table_item, column_items.at(i).column_id_));
     }
   } else if (table_item.is_generated_table() ||
              table_item.is_temp_table() ||

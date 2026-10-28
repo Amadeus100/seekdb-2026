@@ -16,6 +16,7 @@
 
 #define USING_LOG_PREFIX PL
 
+#include "sql/engine/ai/ai_column.h"
 #include "config_bridge.h"
 #include "ob_pl_resolver.h"
 #include "share/rc/ob_server_runtime.h"
@@ -1233,7 +1234,7 @@ int ObPLResolver::build_record_type_by_table_schema(ObSchemaGetterGuard &schema_
     ObTableSchema::const_column_iterator cs_iter_end = table_schema->column_end();
     for (; OB_SUCC(ret) && cs_iter != cs_iter_end; cs_iter++) {
       const ObColumnSchemaV2 &column_schema = **cs_iter;
-      if (!column_schema.is_hidden()) {
+      if (!column_schema.is_hidden() || (with_rowid && share::is_ai_column_trigger_field(*table_schema, column_schema))) {
         ObPLDataType pl_type;
         ObDataType data_type;
         data_type.set_meta_type(column_schema.get_meta_type());
@@ -1332,7 +1333,8 @@ int ObPLResolver::build_record_type_by_schema(
         resolve_ctx, table_schema, record_type));
     } else {
       OZ (build_record_type_by_table_schema(
-        resolve_ctx.schema_guard_, resolve_ctx.allocator_, table_schema, record_type, resolve_ctx.enum_set_ctx_, with_rowid));
+        resolve_ctx.schema_guard_, resolve_ctx.allocator_, table_schema, record_type, resolve_ctx.enum_set_ctx_,
+        with_rowid || resolve_ctx.session_info_.is_for_trigger_package()));
     }
   }
   return ret;
@@ -2259,6 +2261,20 @@ int ObPLResolver::resolve_assign(const ObStmtNodeTree *parse_tree, ObPLAssignStm
                 ? pl::ObPLExternalNS::GLOBAL_VAR : pl::ObPLExternalNS::SESSION_VAR;
           } else if (T_USER_VARIABLE_IDENTIFIER == into_node->type_) {
             q_name.access_idents_.at(0).access_index_ = pl::ObPLExternalNS::USER_VAR;
+          }
+        }
+        const uint64_t ai_table_id = sql::ai_column_trigger_compile_table();
+        if (OB_SUCC(ret) && ai_table_id != OB_INVALID_ID && !sql::is_ai_column_internal_access()
+            && q_name.access_idents_.count() >= 2
+            && q_name.access_idents_.at(0).access_name_.case_compare("NEW") == 0) {
+          const ObTableSchema *target = nullptr;
+          OZ(resolve_ctx_.schema_guard_.get_table_schema(ai_table_id, target));
+          const ObColumnSchemaV2 *column = target == nullptr ? nullptr : target->get_column_schema(
+              q_name.access_idents_.at(q_name.access_idents_.count() - 1).access_name_);
+          if (OB_SUCC(ret) && column != nullptr && (column->has_column_flag(share::AI_COLUMN_SCHEMA_FLAG)
+              || share::is_ai_column_trigger_field(*target, *column))) {
+            ret = OB_NOT_SUPPORTED;
+            LOG_USER_ERROR(OB_NOT_SUPPORTED, "direct trigger assignment to an AI COLUMN or its internal state");
           }
         }
         if (OB_SUCC(ret) && OB_ISNULL(into_expr)) {
@@ -7916,6 +7932,9 @@ int ObPLResolver::check_variable_accessible(ObRawExpr *expr, bool for_write)
   } else if (expr->is_obj_access_expr()) {
     ObObjAccessRawExpr *obj_access = static_cast<ObObjAccessRawExpr*>(expr);
     CK (OB_NOT_NULL(obj_access));
+    if (OB_SUCC(ret) && for_write) {
+      OZ(check_update_column(current_block_->get_namespace(), obj_access->get_access_idxs()));
+    }
     if (OB_FAIL(ret)) {
     } else if (ObObjAccessIdx::is_local_variable(obj_access->get_access_idxs())) {
       if (for_write) {
@@ -10873,6 +10892,39 @@ int ObPLResolver::check_var_type(ObString &name1, ObString &name2, uint64_t db_i
 int ObPLResolver::check_update_column(const ObPLBlockNS &ns, const ObIArray<ObObjAccessIdx>& access_idxs)
 {
   int ret = OB_SUCCESS;
+  uint64_t table_id = sql::ai_column_trigger_compile_table();
+  if ((!resolve_ctx_.session_info_.is_for_trigger_package() && table_id == OB_INVALID_ID) || sql::is_ai_column_internal_access()
+      || access_idxs.count() < 2) { return ret; }
+  bool row_field = false;
+  for (int64_t i = 0; i + 1 < access_idxs.count(); ++i) {
+    row_field = row_field || access_idxs.at(i).var_name_.case_compare("NEW") == 0
+        || access_idxs.at(i).var_name_.case_compare("OLD") == 0;
+  }
+  if (!row_field) { return ret; }
+  const ObPLBlockNS *scope = &ns;
+  while (scope != nullptr && !ObTriggerInfo::is_trigger_package_id(scope->get_package_id())) {
+    scope = scope->get_pre_ns() != nullptr ? scope->get_pre_ns()
+        : scope->get_external_ns() == nullptr ? nullptr : scope->get_external_ns()->get_parent_ns();
+  }
+  const ObTriggerInfo *trigger = nullptr;
+  const ObTableSchema *table = nullptr;
+  if (table_id == OB_INVALID_ID && scope != nullptr) {
+    OZ(resolve_ctx_.schema_guard_.get_trigger_info(ObTriggerInfo::get_package_trigger_id(scope->get_package_id()), trigger));
+    if (OB_SUCC(ret) && trigger != nullptr) {
+      if (trigger->get_trigger_name().prefix_match("__seekdb_ai_")) { return ret; }
+      table_id = trigger->get_base_object_id();
+    }
+  }
+  if (OB_SUCC(ret) && table_id != OB_INVALID_ID) {
+    OZ(resolve_ctx_.schema_guard_.get_table_schema(table_id, table));
+    const ObColumnSchemaV2 *column = table == nullptr ? nullptr
+        : table->get_column_schema(access_idxs.at(access_idxs.count() - 1).var_name_);
+    if (OB_SUCC(ret) && column != nullptr && (column->has_column_flag(share::AI_COLUMN_SCHEMA_FLAG)
+        || share::is_ai_column_trigger_field(*table, *column))) {
+      ret = OB_NOT_SUPPORTED;
+      LOG_USER_ERROR(OB_NOT_SUPPORTED, "direct trigger assignment to an AI COLUMN or its internal state");
+    }
+  }
   return ret;
 }
 

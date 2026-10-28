@@ -16,6 +16,7 @@
 
 #define USING_LOG_PREFIX SHARE
 
+#include "share/ai_service/ai_column_definition.h"
 #include <limits>
 #include <string>
 
@@ -1693,7 +1694,7 @@ int ObVectorIndexUtil::get_vector_dim_from_extend_type_info(const ObIArray<ObStr
 {
   int ret = OB_SUCCESS;
   dim = 0;
-  if (extend_type_info.count() != 1) {
+  if (extend_type_info.count() != 1 && !share::is_ai_vector_type_info(extend_type_info)) {
     // Vector index columns currently only support single column vector indexes.
     // When building the vector column of the auxiliary table, only one column of extend_type_info is assigned.
     ret = OB_NOT_SUPPORTED;
@@ -1724,7 +1725,7 @@ int ObVectorIndexUtil::get_vector_dim_from_extend_type_info(const ObIArray<ObStr
   int ret = OB_SUCCESS;
   is_sparse_vec_col = false;
 
-  if (extend_type_info.count() != 1) {
+  if (extend_type_info.count() != 1 && !share::is_ai_vector_type_info(extend_type_info)) {
     // sparse vector index columns currently only support single column vector indexes.
     // When building the vector column of the auxiliary table, only one column of extend_type_info is assigned.
     ret = OB_NOT_SUPPORTED;

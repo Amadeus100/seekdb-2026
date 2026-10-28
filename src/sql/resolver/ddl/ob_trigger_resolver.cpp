@@ -15,6 +15,7 @@
  */
 
 #define USING_LOG_PREFIX SQL_RESV
+#include "sql/engine/ai/ai_column.h"
 #include "sql/resolver/ddl/ob_trigger_resolver.h"
 #include "sql/resolver/ddl/ob_trigger_source_builder.h"
 #include "sql/resolver/ddl/ob_create_routine_resolver.h"
@@ -238,6 +239,10 @@ int ObTriggerResolver::resolve_drop_trigger_stmt(const ParseNode &parse_node,
   OV (OB_NOT_NULL(session_info_));
   OX ();
   OZ (resolve_schema_name(*parse_node.children_[0], trigger_arg.trigger_database_, trigger_arg.trigger_name_));
+  if (OB_SUCC(ret) && trigger_arg.trigger_name_.prefix_match("__seekdb_ai_") && !is_ai_column_internal_access()) {
+    ret = OB_NOT_SUPPORTED;
+    LOG_USER_ERROR(OB_NOT_SUPPORTED, "modifying an internal AI COLUMN trigger");
+  }
   OV (OB_NOT_NULL(schema_checker_));
   OX (trigger_arg.if_exist_ = parse_node.value_);
   return ret;
@@ -258,6 +263,10 @@ int ObTriggerResolver::resolve_alter_trigger_stmt(const ParseNode &parse_node,
   OV (OB_NOT_NULL(parse_node.children_[1]));  //alter clause.
   OV (OB_NOT_NULL(session_info_) && OB_NOT_NULL(schema_checker_));
   OZ (resolve_schema_name(*parse_node.children_[0], trigger_db_name, trigger_name));
+  if (OB_SUCC(ret) && trigger_name.prefix_match("__seekdb_ai_") && !is_ai_column_internal_access()) {
+    ret = OB_NOT_SUPPORTED;
+    LOG_USER_ERROR(OB_NOT_SUPPORTED, "modifying an internal AI COLUMN trigger");
+  }
   OZ (schema_checker_->get_trigger_info( trigger_db_name,
                                         trigger_name, old_tg_info));
   if (OB_SUCC(ret) && OB_ISNULL(old_tg_info)) {
@@ -286,6 +295,10 @@ int ObTriggerResolver::resolve_trigger_source(const ParseNode &parse_node,
   OV (OB_NOT_NULL(parse_node.children_[0]));    // trigger name.
   OV (OB_NOT_NULL(parse_node.children_[1]));    // trigger definition.
   OZ (resolve_schema_name(*parse_node.children_[0], trigger_arg.trigger_database_, trigger_name));
+  if (OB_SUCC(ret) && trigger_name.prefix_match("__seekdb_ai_") && !is_ai_column_internal_access()) {
+    ret = OB_NOT_SUPPORTED;
+    LOG_USER_ERROR(OB_NOT_SUPPORTED, "reserved AI COLUMN trigger name");
+  }
   OV (OB_NOT_NULL(session_info_));
   OV (OB_NOT_NULL(schema_checker_));
   OZ (trigger_arg.trigger_info_.set_trigger_name(trigger_name), trigger_name);
@@ -369,6 +382,7 @@ int ObTriggerResolver::resolve_trigger_body(const ParseNode &parse_node,
 {
   int ret = OB_SUCCESS;
   ObTriggerInfo &trigger_info = trigger_arg.trigger_info_;
+  AIColumnTriggerCompileGuard ai_trigger_scope(trigger_info.get_base_object_id());
   ObString tg_body;
   CK (OB_NOT_NULL(session_info_));
   OV (OB_NOT_NULL(parse_node.str_value_) && parse_node.str_len_ > 0);

@@ -7,9 +7,10 @@
 #include "sql/engine/ob_exec_context.h"
 #include "sql/session/ob_sql_session_info.h"
 #include "share/ob_server_struct.h"
-#include "lib/mysqlclient/ob_mysql_proxy.h"
-#include "lib/mysqlclient/ob_mysql_transaction.h"
-#include "lib/mysqlclient/ob_mysql_result.h"
+#include "share/schema/ob_schema_service.h"
+#include "common/mysqlclient/ob_mysql_proxy.h"
+#include "common/mysqlclient/ob_mysql_transaction.h"
+#include "common/mysqlclient/ob_mysql_result.h"
 #include "lib/thread/thread_pool.h"
 #include "query/session/ob_inner_sql_connection_access.h"
 #include <algorithm>
@@ -174,6 +175,9 @@ int resolve_ai_column_attribute(const ParseNode &node, ObColumnSchemaV2 &column,
             && ObString(parameters->children_[1]->children_[0]->str_len_, parameters->children_[1]->children_[0]->str_value_).case_compare("AI_PROMPT") == 0;
         if (args.size() == 3 && !definition.embedding) { definition.config = args[2]; }
         ret = ai_collect_dependencies(parameters->children_[1], definition.dependencies, 0);
+        if (OB_SUCC(ret) && !definition.embedding && parameters->num_child_ == 3) {
+          ret = ai_collect_dependencies(parameters->children_[2], definition.dependencies, 0);
+        }
       }
       definition.result_type = column.get_data_type(); definition.result_length = column.get_data_length();
       if (OB_SUCC(ret) && definition.embedding) {
@@ -189,7 +193,7 @@ int resolve_ai_column_attribute(const ParseNode &node, ObColumnSchemaV2 &column,
           }
           if (OB_SUCC(ret) && args.size() == 3) {
             const ParseNode *dimension = parameters->children_[2];
-            if (dimension->type_ != T_INT || dimension->value_ != definition.dimension) { ret = OB_ERR_INVALID_TYPE_FOR_OP; }
+            if (dimension->type_ != T_INT || dimension->value_ != definition.dimension) { ret = OB_ERR_INVALID_VECTOR_DIM; }
           }
         }
       } else if (OB_SUCC(ret)) {
@@ -230,16 +234,35 @@ int resolve_ai_column_attribute(const ParseNode &node, ObColumnSchemaV2 &column,
 int finalize_ai_column_schema(ObTableSchema &table, ObIAllocator &allocator, const ObTableSchema *base)
 {
   int ret = OB_SUCCESS;
-  std::vector<uint64_t> ids;
+  std::vector<ObColumnSchemaV2 *> columns;
+  uint64_t next = base ? base->get_max_used_column_id() : table.get_max_used_column_id();
+  bool has_ai = false;
   for (auto it = table.column_begin(); it != table.column_end(); ++it) {
-    if ((*it)->has_column_flag(AI_COLUMN_SCHEMA_FLAG)) { ids.push_back((*it)->get_column_id()); }
+    has_ai = has_ai || (*it)->has_column_flag(AI_COLUMN_SCHEMA_FLAG);
   }
-  uint64_t next = std::max(table.get_max_used_column_id(), base ? base->get_max_used_column_id() : 0);
-  for (uint64_t id : ids) {
+  if (!has_ai) { return ret; }
+  for (auto it = table.column_begin(); it != table.column_end(); ++it) {
+    if (base && static_cast<AlterColumnSchema *>(*it)->alter_type_ == OB_DDL_ADD_COLUMN) {
+      (*it)->set_column_id(++next);
+    }
+    if ((*it)->has_column_flag(AI_COLUMN_SCHEMA_FLAG)) { columns.push_back(*it); }
+  }
+  for (ObColumnSchemaV2 *column : columns) {
     if (OB_FAIL(ret)) { break; }
-    ObColumnSchemaV2 *column = table.get_column_schema(id);
+    const uint64_t id = column->get_column_id();
+    if (column->is_rowkey_column() || column->is_autoincrement() || !column->is_nullable()
+        || column->is_generated_column()) { return OB_NOT_SUPPORTED; }
     AIColumnDefinition definition;
     if (!get_ai_column_definition(*column, definition)) { ret = OB_INVALID_DATA; break; }
+    if (base && definition.state_column == 0) {
+      const ObColumnSchemaV2 *old = base->get_column_schema(column->get_column_name_str());
+      AIColumnDefinition previous;
+      if (old && get_ai_column_definition(*old, previous)) {
+        definition.state_column = previous.state_column;
+        definition.request_column = previous.request_column;
+        definition.spec_column = previous.spec_column;
+      }
+    }
     for (const std::string &name : definition.dependencies) {
       ObString dependency(name.size(), name.data());
       const ObColumnSchemaV2 *source = table.get_column_schema(dependency);
@@ -249,7 +272,8 @@ int finalize_ai_column_schema(ObTableSchema &table, ObIAllocator &allocator, con
         ret = OB_NOT_SUPPORTED; LOG_USER_ERROR(OB_NOT_SUPPORTED, "AI columns cannot depend on AI columns"); break;
       } else if (source->is_generated_column()) { ret = OB_NOT_SUPPORTED; break; }
     }
-    if (OB_FAIL(ret) || definition.state_column) { continue; }
+    if (OB_FAIL(ret)) { continue; }
+    if (definition.state_column) { ret = ai_store_definition(*column, definition); continue; }
     for (int i = 0; OB_SUCC(ret) && i < 3; ++i) {
       ObColumnSchemaV2 hidden(&allocator);
       hidden.set_table_id(table.get_table_id()); hidden.set_column_id(++next);
@@ -259,14 +283,23 @@ int finalize_ai_column_schema(ObTableSchema &table, ObIAllocator &allocator, con
       hidden.set_is_hidden(true); hidden.set_nullable(true);
       std::string name = std::string(i == 0 ? "__ai_state_" : i == 1 ? "__ai_request_" : "__ai_spec_") + std::to_string(id);
       if (OB_FAIL(hidden.set_column_name(ObString(name.size(), name.data())))) {
-      } else if (OB_FAIL(table.add_column(hidden))) {
-      } else if (i == 0) { definition.state_column = next;
-      } else if (i == 1) { definition.request_column = next;
-      } else { definition.spec_column = next; }
+      } else if (base) {
+        AlterColumnSchema addition(&allocator);
+        if (OB_FAIL(addition.assign(hidden))) {
+        } else {
+          addition.alter_type_ = OB_DDL_ADD_COLUMN;
+          ret = static_cast<AlterTableSchema &>(table).add_alter_column(addition, true);
+        }
+      } else { ret = table.add_column(hidden); }
+      if (OB_SUCC(ret)) {
+        if (i == 0) { definition.state_column = next;
+        } else if (i == 1) { definition.request_column = next;
+        } else { definition.spec_column = next; }
+      }
     }
-    if (OB_SUCC(ret)) { column = table.get_column_schema(id); ret = ai_store_definition(*column, definition); }
+    if (OB_SUCC(ret)) { ret = ai_store_definition(*column, definition); }
   }
-  if (OB_SUCC(ret) && !ids.empty()) { table.set_max_used_column_id(next); }
+  if (OB_SUCC(ret) && !columns.empty()) { table.set_max_used_column_id(next); }
   return ret;
 }
 

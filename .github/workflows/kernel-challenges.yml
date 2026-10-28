@@ -1,0 +1,83 @@
+name: Kernel challenges validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - wip/ai-file-column-2026
+
+permissions:
+  contents: read
+
+jobs:
+  linux-kernel:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build and test requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git wget rpm rpm2cpio cpio make build-essential binutils m4 libtool-bin libncurses5 python3-pip
+          python3 -m pip install pymysql pyarrow
+      - uses: ./.github/actions/setup-rust
+      - name: Cache Linux build dependencies
+        uses: actions/cache@v4
+        with:
+          path: deps/3rd
+          key: kernel-linux-el9-${{ hashFiles('deps/init/oceanbase.el9.x86_64.deps') }}
+      - name: Configure native release build
+        run: ./build.sh release --init 2>&1 | tee configure-kernel.log
+      - name: Compile native seekdb
+        run: make -C build_release -j4 seekdb 2>&1 | tee build-kernel.log
+      - name: Run native SQL integration assertions
+        env:
+          SEEKDB_PORT: '2884'
+          SEEKDB_TEST_PORT: '2884'
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_data="$RUNNER_TEMP/seekdb-kernel-data"
+          task_files="$RUNNER_TEMP/seekdb-kernel-files"
+          mkdir -p "$task_data" "$task_files" kernel-test-evidence
+          build_release/src/observer/seekdb --nodaemon --port=2884 --base-dir="$task_data" \
+            --parameter=memory_budget=4G --parameter=cpu_count=4 \
+            --parameter=datafile_size=1G --parameter=datafile_maxsize=4G \
+            --parameter=log_disk_size=2G --parameter=enable_async_syslog=false \
+            --parameter=syslog_level=WDIAG --variable=secure_file_priv="$task_files" \
+            >kernel-test-evidence/server.stdout 2>kernel-test-evidence/server.stderr &
+          task_pid=$!
+          trap 'kill "$task_pid" 2>/dev/null || true' EXIT
+          python3 - <<'PY'
+          import time, pymysql
+          for attempt in range(180):
+              try:
+                  c = pymysql.connect(host='127.0.0.1',port=2884,user='root',autocommit=True)
+                  with c.cursor() as q:
+                      q.execute('CREATE DATABASE IF NOT EXISTS test')
+                  c.close()
+                  break
+              except pymysql.MySQLError:
+                  time.sleep(1)
+          else:
+              raise SystemExit('seekdb did not become ready')
+          PY
+          python3 unittest/sql/engine/expr/test_ai_enhancement_protocol.py 2>&1 | tee kernel-test-evidence/ai-functions.txt
+          python3 unittest/sql/engine/basic/test_file_sql_integration.py 2>&1 | tee kernel-test-evidence/file-sql.txt
+          python3 unittest/sql/engine/ai/test_ai_column_integration.py 2>&1 | tee kernel-test-evidence/ai-columns.txt
+      - name: Collect diagnostics
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p kernel-test-evidence
+          if [[ -f "$RUNNER_TEMP/seekdb-kernel-data/log/seekdb.log" ]]; then
+            tail -n 6000 "$RUNNER_TEMP/seekdb-kernel-data/log/seekdb.log" > kernel-test-evidence/server-tail.log
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kernel-challenges-linux-evidence
+          path: |
+            configure-kernel.log
+            build-kernel.log
+            kernel-test-evidence/
