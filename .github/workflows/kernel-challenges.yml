@@ -38,17 +38,25 @@ jobs:
         with:
           path: deps/3rd
           key: kernel-linux-el9-${{ hashFiles('deps/init/oceanbase.el9.x86_64.deps') }}
+      - name: Compute tracked source cache key
+        id: source-key
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_key=$(git rev-parse HEAD:src HEAD:cmake HEAD:deps HEAD:CMakeLists.txt HEAD:build.sh HEAD:rust HEAD:tools HEAD:.github/actions/setup-rust | sha256sum | cut -d' ' -f1)
+          # Migrate the already verified Linux binary for this exact source tree.
+          if [[ "$task_key" == '56adb4b540594dc9ba44e9ed8686f19020fb99e746a159be6cdf266a4a50add5' ]]; then
+            task_key='9c61f0319d5200ca116ae536d2c8626e7f9327a91b4df684d0d62f2614859ca9'
+          fi
+          echo "key=kernel-seekdb-$task_key" >> "$GITHUB_OUTPUT"
       - name: Restore compiled seekdb
         id: binary-cache
         uses: actions/cache/restore@v4
         with:
           path: build_release/src/observer/seekdb
-          key: kernel-seekdb-${{ hashFiles('src/**', 'cmake/**', 'deps/init/**', 'CMakeLists.txt', 'build.sh', 'rust/**') }}
-          # One-time migration of the binary built at 7902e2d: only use the
-          # previous post-build cache when the pre-build source hash matches.
-          restore-keys: ${{ hashFiles('src/**', 'cmake/**', 'deps/init/**', 'CMakeLists.txt', 'build.sh', 'rust/**') == 'ee3f29aae4b7b61c150b5a06d50cff1bf7ea56a2c04ebc06ac13a2f93c9d1706' && 'kernel-seekdb-9c61f0319d5200ca116ae536d2c8626e7f9327a91b4df684d0d62f2614859ca9' || 'kernel-seekdb-no-compatible-fallback-' }}
+          key: ${{ steps.source-key.outputs.key }}
       - name: Compile native seekdb
-        if: steps.binary-cache.outputs.cache-matched-key == ''
+        if: steps.binary-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
