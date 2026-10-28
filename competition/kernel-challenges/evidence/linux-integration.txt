@@ -1,0 +1,30 @@
+Linux native integration validation
+Run: https://github.com/Amadeus100/seekdb-2026/actions/runs/40655122608
+Tested commit: 7273aa5b44337a7830ab454d33039de3dd3fed9a
+Binary was built in successful run 40643692825 for identical tracked source trees.
+
+2026-10-28T08:14:54.7215769Z test_completion_prompt_and_longtext (__main__.AIProtocolTest) ... ok
+2026-10-28T08:14:54.7857034Z test_embed_grouping_null_filter_and_limit (__main__.AIProtocolTest) ... ok
+2026-10-28T08:15:11.8562134Z test_embed_response_failures (__main__.AIProtocolTest) ... ok
+2026-10-28T08:15:11.8894309Z test_ollama_alter_and_native_protocol (__main__.AIProtocolTest) ... ok
+2026-10-28T08:15:11.9026496Z test_rerank_global_order_and_ids (__main__.AIProtocolTest) ... ok
+2026-10-28T08:15:12.4032951Z Ran 5 tests in 22.040s
+2026-10-28T08:15:12.4033535Z OK
+2026-10-28T08:15:12.4864943Z test_bounds_bad_data_and_switch (__main__.FileSQLTest) ... ok
+2026-10-28T08:15:12.4900060Z test_copy_roundtrip_and_no_overwrite (__main__.FileSQLTest) ... ok
+2026-10-28T08:15:12.5308671Z test_copy_table_and_runtime_failure_cleanup (__main__.FileSQLTest) ... ok
+2026-10-28T08:15:12.5327893Z test_csv_options_and_json_types (__main__.FileSQLTest) ... ok
+2026-10-28T08:15:12.5398313Z test_native_filter_group_join_and_rescan (__main__.FileSQLTest) ... ok
+2026-10-28T08:15:12.6562417Z test_parquet_multi_group_nullable_projection (__main__.FileSQLTest) ... ok
+2026-10-28T08:15:12.6624023Z test_schema_and_full_inference_after_changes (__main__.FileSQLTest) ... ok
+2026-10-28T08:15:12.6634258Z Ran 7 tests in 0.186s
+2026-10-28T08:15:12.6634592Z OK
+2026-10-28T08:15:13.3106475Z test_01_ddl_and_assignment (__main__.AIColumnIntegration) ... ok
+2026-10-28T08:15:14.5108777Z test_02_transaction_group_and_dml (__main__.AIColumnIntegration) ... ok
+2026-10-28T08:15:18.5203540Z test_03_stale_requests_and_delete (__main__.AIColumnIntegration) ... ok
+2026-10-28T08:15:23.4461379Z test_04_retry_and_strict (__main__.AIColumnIntegration) ... ok
+2026-10-28T08:15:24.6859282Z test_05_vector_and_rollback (__main__.AIColumnIntegration) ... ok
+2026-10-28T08:15:26.2355718Z test_06_row_identity_and_definition_changes (__main__.AIColumnIntegration) ... ok
+2026-10-28T08:15:28.7472960Z test_07_group_final_failure (__main__.AIColumnIntegration) ... ok
+2026-10-28T08:15:28.7766789Z Ran 7 tests in 16.023s
+2026-10-28T08:15:28.7767412Z OK

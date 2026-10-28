@@ -1,12 +1,12 @@
 {
   "checkpoint_date": "2026-10-28",
   "timezone": "Asia/Shanghai",
-  "status": "paused",
-  "ready_for_evaluation": false,
-  "branch": "wip/ai-file-column-2026",
+  "status": "validated_locally_and_linux",
+  "ready_for_evaluation": true,
+  "branch": "2026-competition",
   "pushed": true,
   "base_merge_commit": "77f2d746a2df0cca445d7d5f5c77457b8b898c43",
-  "windows_seekdb_build": "passed with AI COLUMN DDL, metadata, transactional triggers, worker, retry and strict-read sources included; further fixes are being rebuilt",
+  "windows_seekdb_build": "passed with AI COLUMN DDL, metadata, transactional triggers, worker, retry and strict-read sources included",
   "file_scanner_checks": {
     "passed_count": 693,
     "latest_changes_retested": true,
@@ -21,6 +21,6 @@
     "ai_column": "Seven integration groups passed together on the final Windows binary, including DDL/readonly, transactions, stale requests, retry/strict with prepared statements, vector index/rollback, row identity and ALTER backfill, and mixed success/failure. Windows restart recovery also passed after interrupting an in-flight request and waiting for the persisted lease to expire."
   },
   "test_database_pid_46648": "stopped at pause; mysqladmin shutdown was unsupported, process was stopped after exact executable-path verification",
-  "next_step": "Resume by rerunning Linux validation at development branch HEAD, fix any failures, fast-forward 2026-competition, then supply Branch and Commit ID.",
-  "linux_build": "Linux release build passed at 7e284a1; first integration run hit a 10-second model-creation timeout. Test-session timeout was increased, and follow-up run 40643692825 was canceled at user request before completion."
+  "next_step": "Submit branch 2026-competition and its full commit ID to the competition evaluator; hidden tests and platform score are not yet known.",
+  "linux_build": "Linux release build and 19 integration groups passed in run 40643692825; run 40655122608 reused the binary for the identical tracked source trees and passed all 19 groups, including expanded file path security checks."
 }
