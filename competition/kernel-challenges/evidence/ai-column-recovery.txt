@@ -1,0 +1,8 @@
+worker claimed task; restarting owned test server
+waiting for persisted lease to expire and task to recover
+waiting for persisted lease to expire and task to recover
+waiting for persisted lease to expire and task to recover
+waiting for persisted lease to expire and task to recover
+waiting for persisted lease to expire and task to recover
+waiting for persisted lease to expire and task to recover
+PASS: persisted lease recovered after server restart; correct result published and tasks cleaned

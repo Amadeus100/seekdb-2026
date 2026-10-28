@@ -70,7 +70,7 @@ def stop_server(port):
 def start_server(port):
     os.makedirs(state_dir(port), exist_ok=True)
     stop_server(port)
-    for name in ("events.jsonl", "server.out"):
+    for name in ("events.jsonl", "started.jsonl", "server.out"):
         with open(state_path(port, name), "w", encoding="utf-8"):
             pass
     with open(state_path(port, "server.out"), "a", encoding="utf-8") as output:
@@ -146,8 +146,12 @@ def serve(port):
             with lock:
                 attempts[key] = attempts.get(key, 0) + 1
                 attempt = attempts[key]
+                with open(state_path(port, "started.jsonl"), "a", encoding="utf-8") as stream:
+                    stream.write(json.dumps({"path": parsed.path, "user": user_text}) + "\n")
 
-            if "slow-old" in user_text:
+            if "/recovery-slow/" in parsed.path:
+                time.sleep(10)
+            elif "slow-old" in user_text:
                 time.sleep(1.2)
             else:
                 time.sleep(0.05)

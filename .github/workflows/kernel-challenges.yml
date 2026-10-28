@@ -27,9 +27,15 @@ jobs:
           path: deps/3rd
           key: kernel-linux-el9-${{ hashFiles('deps/init/oceanbase.el9.x86_64.deps') }}
       - name: Configure native release build
-        run: ./build.sh release --init 2>&1 | tee configure-kernel.log
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./build.sh release --init 2>&1 | tee configure-kernel.log
       - name: Compile native seekdb
-        run: make -C build_release -j4 seekdb 2>&1 | tee build-kernel.log
+        shell: bash
+        run: |
+          set -euo pipefail
+          make -C build_release -j4 seekdb 2>&1 | tee build-kernel.log
       - name: Run native SQL integration assertions
         env:
           SEEKDB_PORT: '2884'
@@ -72,6 +78,9 @@ jobs:
           mkdir -p kernel-test-evidence
           if [[ -f "$RUNNER_TEMP/seekdb-kernel-data/log/seekdb.log" ]]; then
             tail -n 6000 "$RUNNER_TEMP/seekdb-kernel-data/log/seekdb.log" > kernel-test-evidence/server-tail.log
+          fi
+          if [[ -f src/sql/parser/_gen_parser.error ]]; then
+            cp src/sql/parser/_gen_parser.error kernel-test-evidence/parser.error
           fi
       - uses: actions/upload-artifact@v4
         if: always()

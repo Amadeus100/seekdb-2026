@@ -4,7 +4,7 @@
   "status": "active",
   "ready_for_evaluation": false,
   "branch": "wip/ai-file-column-2026",
-  "pushed": false,
+  "pushed": true,
   "base_merge_commit": "77f2d746a2df0cca445d7d5f5c77457b8b898c43",
   "windows_seekdb_build": "passed with AI COLUMN DDL, metadata, transactional triggers, worker, retry and strict-read sources included; further fixes are being rebuilt",
   "file_scanner_checks": {
@@ -18,8 +18,9 @@
     "ai_functions_full_mock_suite": "52 official main statements and 101 existing AI_PROMPT statements: no execution errors; 5 protocol integration test groups passed",
     "file_tables": "official main: 15 statements, no errors; 7 integration test groups with result assertions passed, including native batch scanning, JOIN, COPY table/query and cleanup",
     "latest_diagnostic_binary_deployed": true,
-    "ai_column": "Seven integration groups passed together on the final Windows binary, including DDL/readonly, transactions, stale requests, retry/strict with prepared statements, vector index/rollback, row identity and ALTER backfill, and mixed success/failure."
+    "ai_column": "Seven integration groups passed together on the final Windows binary, including DDL/readonly, transactions, stale requests, retry/strict with prepared statements, vector index/rollback, row identity and ALTER backfill, and mixed success/failure. Windows restart recovery also passed after interrupting an in-flight request and waiting for the persisted lease to expire."
   },
   "test_database_pid_46648": "stopped at pause; mysqladmin shutdown was unsupported, process was stopped after exact executable-path verification",
-  "next_step": "Run Linux workflow and recovery checks, then update the submission branch."
+  "next_step": "Fix Linux parser generation and rerun CI; then update submission branch.",
+  "linux_build": "Initial workflow failed at SQL parser generation; pipeline masking corrected and diagnostics being investigated."
 }
