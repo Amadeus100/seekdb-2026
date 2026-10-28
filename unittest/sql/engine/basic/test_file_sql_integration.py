@@ -86,6 +86,20 @@ class FileSQLTest(unittest.TestCase):
                 self.assertEqual(self.query(f'SELECT id,flag,name,day,`time`,`unsigned` FROM {table} WHERE id=8'),
                     ((8,0,'unicode-你好0',datetime.date(2024,2,29),datetime.datetime(1969,12,31,23,59,59,999999),'18446744073709551615'),))
 
+    def test_datetime_fractional_precision(self):
+        p = self.dir / 'times.csv'
+        p.write_text('t\n2026-08-01 10:11:12\n2026-08-03 12:13:14\n', encoding='utf-8')
+        with self.db.cursor() as c:
+            c.execute('SELECT t FROM ' + self.scan(p.name) + ' ORDER BY t')
+            self.assertEqual(c.description[0][5], 0)
+            self.assertEqual(c.fetchall(), ((datetime.datetime(2026,8,1,10,11,12),),
+                                            (datetime.datetime(2026,8,3,12,13,14),)))
+        p.write_text('t\n2026-08-01 10:11:12.123456\n2026-08-03 12:13:14\n', encoding='utf-8')
+        with self.db.cursor() as c:
+            c.execute('SELECT t FROM ' + self.scan(p.name) + ' ORDER BY t')
+            self.assertEqual(c.description[0][5], 6)
+            self.assertEqual(c.fetchall()[0][0].microsecond, 123456)
+
     def test_csv_options_and_json_types(self):
         p = self.dir / 'custom.csv'
         p.write_bytes(b'\xef\xbb\xbf1;\'a;\\\'b\';NULL\r\n2;\'\';\'NULL\'\r\n')

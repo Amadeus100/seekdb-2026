@@ -193,7 +193,11 @@ int resolve_ai_column_attribute(const ParseNode &node, ObColumnSchemaV2 &column,
           }
           if (OB_SUCC(ret) && args.size() == 3) {
             const ParseNode *dimension = parameters->children_[2];
-            if (dimension->type_ != T_INT || dimension->value_ != definition.dimension) { ret = OB_ERR_INVALID_VECTOR_DIM; }
+            if (dimension->type_ != T_INT || dimension->value_ != definition.dimension) {
+              ret = OB_ERR_INVALID_VECTOR_DIM;
+              LOG_USER_ERROR(OB_ERR_INVALID_VECTOR_DIM, static_cast<unsigned>(definition.dimension),
+                             static_cast<unsigned>(dimension->value_));
+            }
           }
         }
       } else if (OB_SUCC(ret)) {
@@ -269,7 +273,7 @@ int finalize_ai_column_schema(ObTableSchema &table, ObIAllocator &allocator, con
       if (OB_ISNULL(source) && base) { source = base->get_column_schema(dependency); }
       if (OB_ISNULL(source)) { ret = OB_ERR_BAD_FIELD_ERROR; break;
       } else if (source->has_column_flag(AI_COLUMN_SCHEMA_FLAG)) {
-        ret = OB_NOT_SUPPORTED; LOG_USER_ERROR(OB_NOT_SUPPORTED, "AI columns cannot depend on AI columns"); break;
+        ret = OB_NOT_SUPPORTED; break;
       } else if (source->is_generated_column()) { ret = OB_NOT_SUPPORTED; break; }
     }
     if (OB_FAIL(ret)) { continue; }

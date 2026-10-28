@@ -10,6 +10,7 @@
 #include "common/mysqlclient/ob_mysql_proxy.h"
 #include "common/mysqlclient/ob_mysql_result.h"
 #include "query/session/ob_inner_sql_connection_access.h"
+#include "lib/oblog/ob_warning_buffer.h"
 
 namespace oceanbase { namespace sql {
 using namespace common;
@@ -153,7 +154,12 @@ int install_ai_column_triggers(ObExecContext &ctx, uint64_t table_id, bool backf
     {"BEFORE UPDATE",before_update},{"AFTER UPDATE",after_update},{"AFTER DELETE",after_delete}};
   for (size_t i = 0; OB_SUCC(ret) && i < triggers.size(); ++i) {
     const std::string trigger = db + "." + ai_quote_identifier("__seekdb_ai_" + std::to_string(table_id) + '_' + std::to_string(i));
-    OZ(execute_sql(*ctx.get_my_session(), "DROP TRIGGER IF EXISTS " + trigger));
+    {
+      // These are implementation-owned triggers, so a missing trigger during
+      // first creation must not appear as a warning on the user's DDL.
+      ObWarningBufferIgnoreScope ignore_internal_drop_warnings;
+      OZ(execute_sql(*ctx.get_my_session(), "DROP TRIGGER IF EXISTS " + trigger));
+    }
     OZ(execute_sql(*ctx.get_my_session(), "CREATE TRIGGER " + trigger + ' ' + triggers[i].first
         + " ON " + name + " FOR EACH ROW " + triggers[i].second));
   }

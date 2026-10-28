@@ -22,6 +22,7 @@ struct Column {
   Type type = Type::Null;
   bool nullable = false;
   bool unsafe_integer = false;
+  uint8_t datetime_scale = 0;
 };
 struct Options {
   std::string format;

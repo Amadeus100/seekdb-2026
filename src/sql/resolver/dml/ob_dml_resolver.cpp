@@ -4059,6 +4059,7 @@ int ObDMLResolver::resolve_file_sql_table_item(const ParseNode &node, TableItem 
         ColumnItem *column_item = nullptr;
         ObAccuracy accuracy = ObAccuracy::DDL_DEFAULT_ACCURACY[meta.get_type()];
         if (meta.is_varchar()) { accuracy.set_length(16 * 1024 * 1024); }
+        if (column.type == file_sql::Type::Datetime) { accuracy.set_scale(column.datetime_scale); }
         if (OB_FAIL(ob_write_string(*allocator_, name, copied_name))) {
         } else if (OB_FAIL(resolve_function_table_column_item(*item, meta, accuracy,
             copied_name, OB_APP_MIN_COLUMN_ID + i, column_item))) {

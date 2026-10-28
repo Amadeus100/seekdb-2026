@@ -56,7 +56,7 @@ int resolve_ai_column_command(ObResolverParams &params, const ParseNode &node, O
     return OB_INVALID_ARGUMENT;
   }
   if (!show && node.reserved_) {
-    LOG_USER_ERROR(OB_NOT_SUPPORTED,"RETRY AI COLUMN with another ALTER action");
+    LOG_USER_ERROR(OB_NOT_SUPPORTED,"combining AI COLUMN RETRY with another ALTER action");
     return OB_NOT_SUPPORTED;
   }
   const ParseNode *relation = node.children_[0];
@@ -79,7 +79,7 @@ int resolve_ai_column_command(ObResolverParams &params, const ParseNode &node, O
     const ObColumnSchemaV2 *column = table->get_column_schema(ObString(column_name->str_len_,column_name->str_value_));
     AIColumnDefinition definition;
     if (column == nullptr || !get_ai_column_definition(*column,definition)) {
-      LOG_USER_ERROR(OB_NOT_SUPPORTED,"RETRY on an ordinary or unknown column");
+      LOG_USER_ERROR(OB_NOT_SUPPORTED,"retrying a column that is not an AI column");
       return OB_NOT_SUPPORTED;
     }
     const ObColumnSchemaV2 *state = table->get_column_schema(definition.state_column);

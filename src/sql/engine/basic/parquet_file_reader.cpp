@@ -411,7 +411,9 @@ bool ParquetReader::read_schema(Schema &schema)
     if (field.converted == 9 || field.converted == 10 || field.converted == 20) { type = Type::Datetime; }
     if (field.converted == 14) { type = Type::Varchar; }
     for (const auto &column : schema.columns) { if (column.name == value.at(4).text) { return p.fail("duplicate Parquet column"); } }
-    schema.columns.push_back({value.at(4).text, type, field.optional}); p.fields.push_back(field);
+    schema.columns.push_back({value.at(4).text, type, field.optional});
+    if (type == Type::Datetime) { schema.columns.back().datetime_scale = 6; }
+    p.fields.push_back(field);
   }
   uint64_t rows = 0;
   for (const auto &value : metadata.at(4).list) {

@@ -76,6 +76,9 @@ void merge_value(Column &column, const Cell &cell, bool json)
   if (cell.null) { return; }
   Type type = FileScan::classify(cell.text);
   if (json && cell.quoted && type != Type::Date && type != Type::Datetime) { type = Type::Varchar; }
+  if (type == Type::Datetime && cell.text.size() > 19 && cell.text[19] == '.') {
+    column.datetime_scale = std::max(column.datetime_scale, static_cast<uint8_t>(cell.text.size() - 20));
+  }
   if (type == Type::Bigint) {
     int64_t value = 0; std::from_chars(cell.text.data(), cell.text.data() + cell.text.size(), value);
     column.unsafe_integer = column.unsafe_integer || value > 9007199254740992LL || value < -9007199254740992LL;
@@ -133,7 +136,7 @@ std::string Schema::encode() const
   w.Key("columns"); w.StartArray();
   for (const Column &column : columns) {
     w.StartArray(); w.String(column.name.data(), static_cast<rapidjson::SizeType>(column.name.size()));
-    w.Int(static_cast<int>(column.type)); w.Bool(column.nullable); w.EndArray();
+    w.Int(static_cast<int>(column.type)); w.Bool(column.nullable); w.Uint(column.datetime_scale); w.EndArray();
   }
   w.EndArray(); w.EndObject();
   return std::string(DESCRIPTOR_PREFIX) + std::string(buffer.GetString(), buffer.GetSize());
@@ -167,10 +170,12 @@ bool Schema::decode(const std::string &encoded, Schema &schema)
   schema.options.escape = static_cast<char>(d["escape"].GetInt());
   schema.size = d["size"].GetUint64(); schema.modified = d["modified"].GetInt64();
   for (const auto &c : d["columns"].GetArray()) {
-    if (!c.IsArray() || c.Size() != 3 || !c[0].IsString() || !c[1].IsInt()
-        || c[1].GetInt() < 0 || c[1].GetInt() > static_cast<int>(Type::Datetime) || !c[2].IsBool()) { return false; }
+    if (!c.IsArray() || (c.Size() != 3 && c.Size() != 4) || !c[0].IsString() || !c[1].IsInt()
+        || c[1].GetInt() < 0 || c[1].GetInt() > static_cast<int>(Type::Datetime) || !c[2].IsBool()
+        || (c.Size() == 4 && (!c[3].IsUint() || c[3].GetUint() > 6))) { return false; }
     schema.columns.push_back({std::string(c[0].GetString(), c[0].GetStringLength()),
         static_cast<Type>(c[1].GetInt()), c[2].GetBool()});
+    if (c.Size() == 4) { schema.columns.back().datetime_scale = static_cast<uint8_t>(c[3].GetUint()); }
   }
   return true;
 }
